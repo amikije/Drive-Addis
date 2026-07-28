@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DriveAddis.Api/DriveAddis.Api.csproj" />
+  <Project Path="DriveAddis.Application/DriveAddis.Application.csproj" />
+  <Project Path="DriveAddis.Domain/DriveAddis.Domain.csproj" />
+  <Project Path="DriveAddis.Infrastructure/DriveAddis.Infrastructure.csproj" />
+</Solution>
