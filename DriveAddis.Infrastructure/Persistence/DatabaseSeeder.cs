@@ -6,8 +6,29 @@ public static class DatabaseSeeder
 {
     public static void Seed(DriveAddisDbContext context)
     {
+        SeedStudents(context);
+        SeedInstructors(context);
+    }
+
+    private static void SeedStudents(DriveAddisDbContext context)
+    {
+        if (context.Students.Any())
+            return;
+
+        var students = new List<Student>
+        {
+            new() { FullName = "Selam Tadesse", PhoneNumber = "+251922000001", LicenseNumber = "LIC-001" },
+            new() { FullName = "Dawit Girma", PhoneNumber = "+251922000002", LicenseNumber = "LIC-002" }
+        };
+
+        context.Students.AddRange(students);
+        context.SaveChanges();
+    }
+
+    private static void SeedInstructors(DriveAddisDbContext context)
+    {
         if (context.Instructors.Any())
-            return; // already seeded, don't duplicate
+            return;
 
         var instructors = new List<Instructor>
         {
@@ -18,7 +39,7 @@ public static class DatabaseSeeder
                 IsVerified = true,
                 HourlyPrice = 300,
                 Latitude = 9.0192,
-                Longitude = 38.7525, // Bole area
+                Longitude = 38.7525,
                 AverageRating = 4.5,
                 Vehicles = new List<Vehicle>
                 {
@@ -32,7 +53,7 @@ public static class DatabaseSeeder
                 IsVerified = true,
                 HourlyPrice = 400,
                 Latitude = 9.0350,
-                Longitude = 38.7469, // Kazanchis area
+                Longitude = 38.7469,
                 AverageRating = 4.8,
                 Vehicles = new List<Vehicle>
                 {
@@ -46,7 +67,7 @@ public static class DatabaseSeeder
                 IsVerified = true,
                 HourlyPrice = 250,
                 Latitude = 9.0000,
-                Longitude = 38.7600, // near Mexico square
+                Longitude = 38.7600,
                 AverageRating = 4.2,
                 Vehicles = new List<Vehicle>
                 {

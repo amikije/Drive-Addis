@@ -21,4 +21,11 @@ public class InstructorRepository : IInstructorRepository
             .Where(i => i.IsVerified)
             .ToListAsync(ct);
     }
+
+    public async Task<Instructor?> GetByIdAsync(int id, CancellationToken ct)
+    {
+        return await _context.Instructors
+            .Include(i => i.Vehicles)
+            .FirstOrDefaultAsync(i => i.Id == id, ct);
+    }
 }

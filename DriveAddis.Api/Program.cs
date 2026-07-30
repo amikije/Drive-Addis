@@ -18,7 +18,8 @@ builder.Services.AddMediatR(cfg =>
 
 // 3. Repository — tells the app "whenever someone asks for IInstructorRepository, give them InstructorRepository"
 builder.Services.AddScoped<IInstructorRepository, InstructorRepository>();
-
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 // 4. Controllers + OpenAPI
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
