@@ -4,6 +4,7 @@ using DriveAddis.Infrastructure.Persistence;
 using DriveAddis.Infrastructure.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +25,17 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// 5. Apply migrations + seed fake data on startup
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<DriveAddisDbContext>();
+    context.Database.Migrate();
+    DatabaseSeeder.Seed(context);
+}
+
+// 6. Middleware pipeline
 app.MapOpenApi();
+app.MapScalarApiReference();
 app.MapControllers();
 
 app.Run();

@@ -4,9 +4,11 @@ using MediatR;
 namespace DriveAddis.Application.Instructors.Queries;
 
 public record SearchInstructorsQuery(
-    double StudentLatitude,
-    double StudentLongitude,
+      
+    string? Name,
     decimal? MaxPrice,
     double? MinRating,
-    string? VehicleType
+    string? VehicleType,
+    double StudentLatitude,
+    double StudentLongitude
 ) : IRequest<List<InstructorSearchResultDto>>;

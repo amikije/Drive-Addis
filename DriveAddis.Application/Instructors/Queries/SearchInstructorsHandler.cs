@@ -31,6 +31,8 @@ public class SearchInstructorsHandler
                     i.Latitude, i.Longitude),
                 VehicleTypes = i.Vehicles.Select(v => v.Type.ToString()).ToList()
             })
+            .Where(r => string.IsNullOrWhiteSpace(request.Name)
+    || r.FullName.Contains(request.Name, StringComparison.OrdinalIgnoreCase))
             .Where(r => request.MaxPrice == null || r.HourlyPrice <= request.MaxPrice)
             .Where(r => request.MinRating == null || r.AverageRating >= request.MinRating)
             .Where(r => request.VehicleType == null || r.VehicleTypes.Contains(request.VehicleType))
