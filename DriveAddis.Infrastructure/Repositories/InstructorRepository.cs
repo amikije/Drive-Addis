@@ -28,4 +28,16 @@ public class InstructorRepository : IInstructorRepository
             .Include(i => i.Vehicles)
             .FirstOrDefaultAsync(i => i.Id == id, ct);
     }
+    public async Task UpdateAverageRatingAsync(int instructorId, CancellationToken ct)
+    {
+        var instructor = await _context.Instructors
+            .Include(i => i.Reviews)
+            .FirstOrDefaultAsync(i => i.Id == instructorId, ct);
+
+        if (instructor is null || !instructor.Reviews.Any())
+            return;
+
+        instructor.AverageRating = instructor.Reviews.Average(r => r.Rating);
+        await _context.SaveChangesAsync(ct);
+    }
 }

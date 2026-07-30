@@ -31,4 +31,21 @@ public class BookingRepository : IBookingRepository
     {
         await _context.SaveChangesAsync(ct);
     }
+    public async Task<List<Booking>> GetBookingsAsync(int? studentId, int? instructorId, CancellationToken ct)
+    {
+        var query = _context.Bookings
+            .Include(b => b.Student)
+            .Include(b => b.Instructor)
+            .AsQueryable();
+
+        if (studentId.HasValue)
+            query = query.Where(b => b.StudentId == studentId.Value);
+
+        if (instructorId.HasValue)
+            query = query.Where(b => b.InstructorId == instructorId.Value);
+
+        return await query
+            .OrderByDescending(b => b.ScheduledAt)
+            .ToListAsync(ct);
+    }
 }

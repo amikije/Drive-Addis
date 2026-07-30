@@ -1,4 +1,5 @@
 using DriveAddis.Application.Bookings.Commands;
+using DriveAddis.Application.Bookings.Queries;
 using DriveAddis.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -37,6 +38,16 @@ public class BookingsController : ControllerBase
         return result.IsSuccess
             ? Ok(result.Value)
             : BadRequest(new { error = result.Error });
+    }
+    [HttpGet]
+    public async Task<IActionResult> GetBookings(
+    [FromQuery] int? studentId,
+    [FromQuery] int? instructorId,
+    CancellationToken ct)
+    {
+        var query = new GetBookingsQuery(studentId, instructorId);
+        var results = await _mediator.Send(query, ct);
+        return Ok(results);
     }
 
     public record UpdateStatusRequest(BookingStatus Status);
