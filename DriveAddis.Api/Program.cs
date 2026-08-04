@@ -2,6 +2,7 @@ using DriveAddis.Application.Instructors.Queries;
 using DriveAddis.Application.Interfaces;
 using DriveAddis.Infrastructure.Persistence;
 using DriveAddis.Infrastructure.Repositories;
+using DriveAddis.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -21,6 +22,9 @@ builder.Services.AddScoped<IInstructorRepository, InstructorRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 // 4. Controllers + OpenAPI
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
