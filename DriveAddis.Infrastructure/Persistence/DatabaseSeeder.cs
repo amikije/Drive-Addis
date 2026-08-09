@@ -51,7 +51,7 @@ public static class DatabaseSeeder
                 FullName = "Marta  Alemu",
                 PhoneNumber = "+251911000002",
                 IsVerified = true,
-                HourlyPrice = 400,
+                HourlyPrice = 600,
                 Latitude = 9.0350,
                 Longitude = 38.7469,
                 AverageRating = 4.8,
