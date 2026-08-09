@@ -7,17 +7,21 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Database connection
 builder.Services.AddDbContext<DriveAddisDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DriveAddisDatabase")));
 
-// 2. MediatR — scans the Application project for all handlers (like SearchInstructorsHandler)
+// 2. MediatR — scans the Application project for all handlers
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(SearchInstructorsQuery).Assembly));
 
-// 3. Repository — tells the app "whenever someone asks for IInstructorRepository, give them InstructorRepository"
+// 3. Repositories & Services
 builder.Services.AddScoped<IInstructorRepository, InstructorRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
@@ -25,7 +29,27 @@ builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-// 4. Controllers + OpenAPI
+
+// 4. Authentication & Authorization
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// 5. Controllers + OpenAPI
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -35,7 +59,7 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// 5. Apply migrations + seed fake data on startup
+// 6. Apply migrations + seed fake data on startup
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<DriveAddisDbContext>();
@@ -43,9 +67,11 @@ using (var scope = app.Services.CreateScope())
     DatabaseSeeder.Seed(context);
 }
 
-// 6. Middleware pipeline
+// 7. Middleware pipeline
 app.MapOpenApi();
 app.MapScalarApiReference();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();

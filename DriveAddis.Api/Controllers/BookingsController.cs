@@ -3,11 +3,13 @@ using DriveAddis.Application.Bookings.Queries;
 using DriveAddis.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.AspNetCore.Authorization;
+using DriveAddis.Application.Dtos;
 namespace DriveAddis.Api.Controllers;
 
 [ApiController]
 [Route("api/bookings")]
+[Authorize]
 public class BookingsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -48,6 +50,18 @@ public class BookingsController : ControllerBase
         var query = new GetBookingsQuery(studentId, instructorId);
         var results = await _mediator.Send(query, ct);
         return Ok(results);
+    }
+
+    private static object MapToResponse(BookingListItemDto booking)
+    {
+        return new
+        {
+            booking.Id,
+            booking.StudentName,
+            booking.InstructorName,
+            booking.ScheduledAt,
+            booking.Status
+        };
     }
 
     public record UpdateStatusRequest(BookingStatus Status);

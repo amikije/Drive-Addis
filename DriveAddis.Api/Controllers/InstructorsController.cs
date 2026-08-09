@@ -1,3 +1,4 @@
+using DriveAddis.Application.Dtos;
 using DriveAddis.Application.Instructors.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -29,5 +30,18 @@ public class InstructorsController : ControllerBase
         var query = new SearchInstructorsQuery(name,maxPrice, minRating, vehicleType, lat, lng);
         var results = await _mediator.Send(query, ct);
         return Ok(results);
+
+    }
+    public static object MapToResponse(InstructorSearchResultDto instructor)
+    {
+        return new
+        {
+            instructor.Id,
+            instructor.FullName,
+            instructor.HourlyPrice,
+            instructor.AverageRating,
+            instructor.DistanceKm,
+            VehicleTypes = instructor.VehicleTypes
+        };
     }
 }

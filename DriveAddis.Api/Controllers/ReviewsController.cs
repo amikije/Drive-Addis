@@ -24,4 +24,5 @@ public class ReviewsController : ControllerBase
             ? Ok(result.Value)
             : BadRequest(new { error = result.Error });
     }
-}
+   
+    }
