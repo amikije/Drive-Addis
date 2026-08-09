@@ -62,7 +62,7 @@ public static class DatabaseSeeder
             },
             new()
             {
-                FullName = "Yonas Tesfaye",
+                FullName = " Yonas ",
                 PhoneNumber = "+251911000003",
                 IsVerified = true,
                 HourlyPrice = 250,
