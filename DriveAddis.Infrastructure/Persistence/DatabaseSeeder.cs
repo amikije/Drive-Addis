@@ -48,7 +48,7 @@ public static class DatabaseSeeder
             },
             new()
             {
-                FullName = "Marta Alemu",
+                FullName = "Marta  Alemu",
                 PhoneNumber = "+251911000002",
                 IsVerified = true,
                 HourlyPrice = 400,
