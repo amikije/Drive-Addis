@@ -8,4 +8,7 @@ public record CreateReviewCommand(
     int BookingId,
     int Rating,
     string? Comment
-) : IRequest<Result<ReviewResponseDto>>;
+) : IRequest<Result<ReviewResponseDto>>
+{
+    public int StudentId { get; init; } // set by the controller from the token
+}
