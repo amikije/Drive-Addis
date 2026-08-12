@@ -63,10 +63,10 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<DriveAddisDbContext>();
+    var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
     context.Database.Migrate();
-    DatabaseSeeder.Seed(context);
+    DatabaseSeeder.Seed(context, passwordHasher);
 }
-
 // 7. Middleware pipeline
 app.MapOpenApi();
 app.MapScalarApiReference();

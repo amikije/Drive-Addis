@@ -1,13 +1,15 @@
+using DriveAddis.Application.Interfaces;
 using DriveAddis.Domain.Entities;
 
 namespace DriveAddis.Infrastructure.Persistence;
 
 public static class DatabaseSeeder
 {
-    public static void Seed(DriveAddisDbContext context)
+    public static void Seed(DriveAddisDbContext context, IPasswordHasher passwordHasher)
     {
         SeedStudents(context);
         SeedInstructors(context);
+        SeedAdmin(context, passwordHasher);
     }
 
     private static void SeedStudents(DriveAddisDbContext context)
@@ -77,6 +79,22 @@ public static class DatabaseSeeder
         };
 
         context.Instructors.AddRange(instructors);
+        context.SaveChanges();
+    }
+
+    private static void SeedAdmin(DriveAddisDbContext context, IPasswordHasher passwordHasher)
+    {
+        if (context.Users.Any(u => u.Role == UserRole.Admin))
+            return;
+
+        var admin = new User
+        {
+            PhoneNumber = "+251900000000",
+            PasswordHash = passwordHasher.Hash("AdminPass123!"),
+            Role = UserRole.Admin
+        };
+
+        context.Users.Add(admin);
         context.SaveChanges();
     }
 }
