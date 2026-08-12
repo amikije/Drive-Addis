@@ -5,7 +5,7 @@ using MediatR;
 namespace DriveAddis.Application.Instructors.Queries;
 
 public class SearchInstructorsHandler
-    : IRequestHandler<SearchInstructorsQuery, List<InstructorSearchResultDto>>
+    : IRequestHandler<SearchInstructorsQuery, PagedResultDto<InstructorSearchResultDto>>
 {
     private readonly IInstructorRepository _repository;
 
@@ -14,7 +14,7 @@ public class SearchInstructorsHandler
         _repository = repository;
     }
 
-    public async Task<List<InstructorSearchResultDto>> Handle(
+    public async Task<PagedResultDto<InstructorSearchResultDto>> Handle(
         SearchInstructorsQuery request, CancellationToken ct)
     {
         var instructors = await _repository.GetAllVerifiedAsync(ct);
@@ -26,20 +26,37 @@ public class SearchInstructorsHandler
                 FullName = i.FullName,
                 HourlyPrice = i.HourlyPrice,
                 AverageRating = i.AverageRating,
-                DistanceKm = CalculateDistanceKm(
-                    request.StudentLatitude, request.StudentLongitude,
-                    i.Latitude, i.Longitude),
+                DistanceKm = (request.StudentLatitude.HasValue && request.StudentLongitude.HasValue)
+                    ? CalculateDistanceKm(request.StudentLatitude.Value, request.StudentLongitude.Value, i.Latitude, i.Longitude)
+                    : -1,
                 VehicleTypes = i.Vehicles.Select(v => v.Type.ToString()).ToList()
             })
             .Where(r => string.IsNullOrWhiteSpace(request.Name)
-    || r.FullName.Contains(request.Name, StringComparison.OrdinalIgnoreCase))
+                || r.FullName.Contains(request.Name, StringComparison.OrdinalIgnoreCase))
             .Where(r => request.MaxPrice == null || r.HourlyPrice <= request.MaxPrice)
             .Where(r => request.MinRating == null || r.AverageRating >= request.MinRating)
             .Where(r => request.VehicleType == null || r.VehicleTypes.Contains(request.VehicleType))
-            .OrderBy(r => r.DistanceKm)
             .ToList();
 
-        return results;
+        // Sort by distance if location was given, otherwise fall back to best-rated first
+        results = (request.StudentLatitude.HasValue && request.StudentLongitude.HasValue)
+            ? results.OrderBy(r => r.DistanceKm).ToList()
+            : results.OrderByDescending(r => r.AverageRating).ToList();
+
+        var totalCount = results.Count;
+
+        var pagedItems = results
+            .Skip((request.PageNumber - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToList();
+
+        return new PagedResultDto<InstructorSearchResultDto>
+        {
+            Items = pagedItems,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
+            TotalCount = totalCount
+        };
     }
 
     // Haversine formula — calculates great-circle distance between two lat/lng points in km

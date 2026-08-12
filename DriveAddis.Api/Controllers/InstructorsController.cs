@@ -20,19 +20,19 @@ public class InstructorsController : ControllerBase
 
     [HttpGet("search")]
     public async Task<IActionResult> Search(
-         [FromQuery] string? name,
-       
-        [FromQuery] decimal? maxPrice,
-        [FromQuery] double? minRating,
-        [FromQuery] string? vehicleType, 
-        [FromQuery] double lat,
-        [FromQuery] double lng,
-        CancellationToken ct)
+      [FromQuery] double? lat,
+      [FromQuery] double? lng,
+      [FromQuery] decimal? maxPrice,
+      [FromQuery] double? minRating,
+      [FromQuery] string? vehicleType,
+      [FromQuery] string? name,
+      [FromQuery] int pageNumber = 1,
+      [FromQuery] int pageSize = 10,
+      CancellationToken ct = default)
     {
-        var query = new SearchInstructorsQuery(name,maxPrice, minRating, vehicleType, lat, lng);
+        var query = new SearchInstructorsQuery(lat, lng, maxPrice, minRating, vehicleType, name, pageNumber, pageSize);
         var results = await _mediator.Send(query, ct);
         return Ok(results);
-
     }
     [HttpPatch("{id}/verify")]
     [Authorize(Roles = "Admin")]
