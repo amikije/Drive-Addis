@@ -48,4 +48,18 @@ public class BookingRepository : IBookingRepository
             .OrderByDescending(b => b.ScheduledAt)
             .ToListAsync(ct);
     }
+    public async Task<bool> HasConflictingBookingAsync(int instructorId, DateTime scheduledAt, CancellationToken ct)
+    {
+        var lessonDuration = TimeSpan.FromHours(1);
+        var newStart = scheduledAt;
+        var newEnd = scheduledAt.Add(lessonDuration);
+
+        return await _context.Bookings
+            .Where(b => b.InstructorId == instructorId)
+            .Where(b => b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed)
+            .AnyAsync(b =>
+                newStart < b.ScheduledAt.Add(lessonDuration) &&
+                b.ScheduledAt < newEnd,
+                ct);
+    }
 }

@@ -37,7 +37,11 @@ public class CreateBookingHandler : IRequestHandler<CreateBookingCommand, Result
 
         if (request.ScheduledAt <= DateTime.UtcNow)
             return Result<BookingResponseDto>.Failure("Booking time must be in the future.");
+        var hasConflict = await _bookingRepository.HasConflictingBookingAsync(
+            request.InstructorId, request.ScheduledAt, ct);
 
+        if (hasConflict)
+            return Result<BookingResponseDto>.Failure("This instructor is already booked around that time.");
         var booking = new Booking
         {
             StudentId = request.StudentId,

@@ -8,4 +8,5 @@ public interface IBookingRepository
     Task AddAsync(Booking booking, CancellationToken ct);
     Task SaveChangesAsync(CancellationToken ct);
     Task<List<Booking>> GetBookingsAsync(int? studentId, int? instructorId, CancellationToken ct);
+    Task<bool> HasConflictingBookingAsync(int instructorId, DateTime scheduledAt, CancellationToken ct);
 }
