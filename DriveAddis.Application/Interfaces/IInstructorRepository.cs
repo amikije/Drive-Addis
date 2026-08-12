@@ -7,4 +7,5 @@ public interface IInstructorRepository
     Task<List<Instructor>> GetAllVerifiedAsync(CancellationToken ct);
     Task<Instructor?> GetByIdAsync(int id, CancellationToken ct);
     Task UpdateAverageRatingAsync(int instructorId, CancellationToken ct);
+    Task VerifyAsync(int instructorId, CancellationToken ct);
 }

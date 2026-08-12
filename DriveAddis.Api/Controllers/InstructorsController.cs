@@ -1,6 +1,8 @@
 using DriveAddis.Application.Dtos;
+using DriveAddis.Application.Instructors.Commands;
 using DriveAddis.Application.Instructors.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DriveAddis.Api.Controllers;
@@ -31,6 +33,17 @@ public class InstructorsController : ControllerBase
         var results = await _mediator.Send(query, ct);
         return Ok(results);
 
+    }
+    [HttpPatch("{id}/verify")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Verify(int id, CancellationToken ct)
+    {
+        var command = new VerifyInstructorCommand(id);
+        var result = await _mediator.Send(command, ct);
+
+        return result.IsSuccess
+            ? Ok(new { message = "Instructor verified." })
+            : BadRequest(new { error = result.Error });
     }
     public static object MapToResponse(InstructorSearchResultDto instructor)
     {

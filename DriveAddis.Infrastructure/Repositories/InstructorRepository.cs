@@ -40,4 +40,14 @@ public class InstructorRepository : IInstructorRepository
         instructor.AverageRating = instructor.Reviews.Average(r => r.Rating);
         await _context.SaveChangesAsync(ct);
     }
+    public async Task VerifyAsync(int instructorId, CancellationToken ct)
+    {
+        var instructor = await _context.Instructors.FindAsync([instructorId], ct);
+
+        if (instructor is not null)
+        {
+            instructor.IsVerified = true;
+            await _context.SaveChangesAsync(ct);
+        }
+    }
 }

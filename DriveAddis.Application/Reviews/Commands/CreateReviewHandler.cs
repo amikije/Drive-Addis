@@ -34,7 +34,8 @@ public class CreateReviewHandler : IRequestHandler<CreateReviewCommand, Result<R
 
         if (booking.Status != BookingStatus.Completed)
             return Result<ReviewResponseDto>.Failure("Only completed bookings can be reviewed.");
-
+        if (booking.StudentId != request.StudentId)
+            return Result<ReviewResponseDto>.Failure("You can only review your own bookings.");
         var existingReview = await _reviewRepository.GetByBookingIdAsync(request.BookingId, ct);
         if (existingReview is not null)
             return Result<ReviewResponseDto>.Failure("This booking already has a review.");
