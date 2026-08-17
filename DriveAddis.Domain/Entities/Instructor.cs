@@ -10,6 +10,8 @@ public class Instructor
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public double AverageRating { get; set; } = 0;
+
+    public string? LicensePhotoUrl { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();

@@ -45,6 +45,8 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, Result<AuthRespo
         }
         else if (request.Role == UserRole.Instructor)
         {
+            if (string.IsNullOrWhiteSpace(request.LicensePhotoUrl))
+                return Result<AuthResponseDto>.Failure("License photo is required for instructor registration.");
             user.Instructor = new Instructor
             {
                 FullName = request.FullName,
@@ -52,7 +54,9 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, Result<AuthRespo
                 HourlyPrice = request.HourlyPrice ?? 0,
                 Latitude = request.Latitude ?? 0,
                 Longitude = request.Longitude ?? 0,
-                IsVerified = false // must be verified by an Admin before receiving bookings
+                IsVerified = false, // must be verified by an Admin before receiving bookings
+                LicensePhotoUrl = request.LicensePhotoUrl
+
             };
         }
         else

@@ -12,5 +12,6 @@ public record RegisterCommand(
     UserRole Role,
     decimal? HourlyPrice,
     double? Latitude,
-    double? Longitude
+    double? Longitude,
+     string? LicensePhotoUrl
 ) : IRequest<Result<AuthResponseDto>>;
