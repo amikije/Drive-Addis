@@ -47,4 +47,24 @@ public class AdminRepository : IAdminRepository
             PlatformAverageRating = avgRating
         };
     }
+    public async Task<List<InstructorAdminListItemDto>> GetInstructorsAsync(bool? unverifiedOnly, CancellationToken ct)
+    {
+        var query = _context.Instructors.AsQueryable();
+
+        if (unverifiedOnly == true)
+            query = query.Where(i => !i.IsVerified);
+
+        return await query
+            .OrderByDescending(i => i.CreatedAt)
+            .Select(i => new InstructorAdminListItemDto
+            {
+                Id = i.Id,
+                FullName = i.FullName,
+                PhoneNumber = i.PhoneNumber,
+                HourlyPrice = i.HourlyPrice,
+                IsVerified = i.IsVerified,
+                CreatedAt = i.CreatedAt
+            })
+            .ToListAsync(ct);
+    }
 }
