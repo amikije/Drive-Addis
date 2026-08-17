@@ -57,4 +57,17 @@ public class InstructorsController : ControllerBase
             VehicleTypes = instructor.VehicleTypes
         };
     }
+    public record RejectRequest(string Reason);
+
+    [HttpPatch("{id}/reject")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Reject(int id, [FromBody] RejectRequest request, CancellationToken ct)
+    {
+        var command = new RejectInstructorCommand(id, request.Reason);
+        var result = await _mediator.Send(command, ct);
+
+        return result.IsSuccess
+            ? Ok(new { message = "Instructor rejected." })
+            : BadRequest(new { error = result.Error });
+    }
 }
