@@ -47,12 +47,17 @@ public class AdminRepository : IAdminRepository
             PlatformAverageRating = avgRating
         };
     }
-    public async Task<List<InstructorAdminListItemDto>> GetInstructorsAsync(bool? unverifiedOnly, CancellationToken ct)
+    public async Task<List<InstructorAdminListItemDto>> GetInstructorsAsync(
+     bool? unverifiedOnly, string? search, CancellationToken ct)
     {
         var query = _context.Instructors.AsQueryable();
 
         if (unverifiedOnly == true)
             query = query.Where(i => !i.IsVerified);
+
+        if (!string.IsNullOrWhiteSpace(search))
+            query = query.Where(i =>
+                i.FullName.Contains(search) || i.PhoneNumber.Contains(search));
 
         return await query
             .OrderByDescending(i => i.CreatedAt)

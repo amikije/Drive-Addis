@@ -26,12 +26,14 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("instructors")]
-    public async Task<IActionResult> GetInstructors([FromQuery] bool? unverifiedOnly, CancellationToken ct)
+    public async Task<IActionResult> GetInstructors(
+       [FromQuery] bool? unverifiedOnly,
+       [FromQuery] string? search,
+       CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetInstructorsForAdminQuery(unverifiedOnly), ct);
+        var result = await _mediator.Send(new GetInstructorsForAdminQuery(unverifiedOnly, search), ct);
         return Ok(result);
     }
-
     [HttpGet("bookings")]
     public async Task<IActionResult> GetAllBookings(CancellationToken ct)
     {

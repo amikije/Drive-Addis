@@ -15,6 +15,6 @@ public class GetInstructorsForAdminHandler : IRequestHandler<GetInstructorsForAd
 
     public async Task<List<InstructorAdminListItemDto>> Handle(GetInstructorsForAdminQuery request, CancellationToken ct)
     {
-        return await _adminRepository.GetInstructorsAsync(request.UnverifiedOnly, ct);
+        return await _adminRepository.GetInstructorsAsync(request.UnverifiedOnly, request.Search, ct);
     }
 }
