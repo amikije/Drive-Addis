@@ -35,13 +35,5 @@ public class AuthController : ControllerBase
             ? Ok(result.Value)
             : Unauthorized(new { error = result.Error });
     }
-    public static object MapToResponse(AuthResponseDto authResponse)
-    {
-        return new
-        {
-            authResponse.Token,
-            authResponse.Role,
-            authResponse.UserId
-        };
-    }
+   
 }
