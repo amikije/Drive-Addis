@@ -19,7 +19,8 @@ public class AdminRepository : IAdminRepository
     {
         var totalStudents = await _context.Students.CountAsync(ct);
         var totalInstructors = await _context.Instructors.CountAsync(ct);
-        var verifiedInstructors = await _context.Instructors.CountAsync(i => i.IsVerified, ct);
+        var verifiedInstructors = await _context.Instructors
+            .CountAsync(i => i.VerificationStatus == VerificationStatus.Verified, ct);
 
         var totalBookings = await _context.Bookings.CountAsync(ct);
         var pending = await _context.Bookings.CountAsync(b => b.Status == BookingStatus.Pending, ct);
@@ -47,13 +48,14 @@ public class AdminRepository : IAdminRepository
             PlatformAverageRating = avgRating
         };
     }
+
     public async Task<List<InstructorAdminListItemDto>> GetInstructorsAsync(
-     bool? unverifiedOnly, string? search, CancellationToken ct)
+        bool? unverifiedOnly, string? search, CancellationToken ct)
     {
         var query = _context.Instructors.AsQueryable();
 
         if (unverifiedOnly == true)
-            query = query.Where(i => !i.IsVerified);
+            query = query.Where(i => i.VerificationStatus == VerificationStatus.Pending);
 
         if (!string.IsNullOrWhiteSpace(search))
             query = query.Where(i =>
@@ -67,7 +69,8 @@ public class AdminRepository : IAdminRepository
                 FullName = i.FullName,
                 PhoneNumber = i.PhoneNumber,
                 HourlyPrice = i.HourlyPrice,
-                IsVerified = i.IsVerified,
+                VerificationStatus = i.VerificationStatus.ToString(),
+                RejectionReason = i.RejectionReason,
                 CreatedAt = i.CreatedAt
             })
             .ToListAsync(ct);

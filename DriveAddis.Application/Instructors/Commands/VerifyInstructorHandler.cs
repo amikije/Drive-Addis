@@ -1,5 +1,6 @@
 using DriveAddis.Application.Common;
 using DriveAddis.Application.Interfaces;
+using DriveAddis.Domain.Entities;
 using MediatR;
 
 namespace DriveAddis.Application.Instructors.Commands;
@@ -20,7 +21,7 @@ public class VerifyInstructorHandler : IRequestHandler<VerifyInstructorCommand, 
         if (instructor is null)
             return Result<bool>.Failure("Instructor not found.");
 
-        if (instructor.IsVerified)
+        if (instructor.VerificationStatus == VerificationStatus.Verified)
             return Result<bool>.Failure("Instructor is already verified.");
 
         await _instructorRepository.VerifyAsync(request.InstructorId, ct);

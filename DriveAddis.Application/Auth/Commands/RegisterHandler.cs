@@ -54,7 +54,7 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, Result<AuthRespo
                 HourlyPrice = request.HourlyPrice ?? 0,
                 Latitude = request.Latitude ?? 0,
                 Longitude = request.Longitude ?? 0,
-                IsVerified = false, // must be verified by an Admin before receiving bookings
+             
                 LicensePhotoUrl = request.LicensePhotoUrl
 
             };

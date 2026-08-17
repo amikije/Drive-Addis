@@ -32,9 +32,8 @@ public class CreateBookingHandler : IRequestHandler<CreateBookingCommand, Result
         if (instructor is null)
             return Result<BookingResponseDto>.Failure("Instructor not found.");
 
-        if (!instructor.IsVerified)
+        if (instructor.VerificationStatus != VerificationStatus.Verified)
             return Result<BookingResponseDto>.Failure("Instructor is not verified.");
-
         if (request.ScheduledAt <= DateTime.UtcNow)
             return Result<BookingResponseDto>.Failure("Booking time must be in the future.");
         var hasConflict = await _bookingRepository.HasConflictingBookingAsync(

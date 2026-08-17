@@ -8,4 +8,5 @@ public interface IInstructorRepository
     Task<Instructor?> GetByIdAsync(int id, CancellationToken ct);
     Task UpdateAverageRatingAsync(int instructorId, CancellationToken ct);
     Task VerifyAsync(int instructorId, CancellationToken ct);
+    Task RejectAsync(int instructorId, string reason, CancellationToken ct);
 }

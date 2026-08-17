@@ -38,7 +38,7 @@ public static class DatabaseSeeder
             {
                 FullName = "Abebe Kebede",
                 PhoneNumber = "+251911000001",
-                IsVerified = true,
+              VerificationStatus = VerificationStatus.Verified,
                 HourlyPrice = 300,
                 Latitude = 9.0192,
                 Longitude = 38.7525,
@@ -52,7 +52,7 @@ public static class DatabaseSeeder
             {
                 FullName = "Marta  Alemu",
                 PhoneNumber = "+251911000002",
-                IsVerified = true,
+               VerificationStatus = VerificationStatus.Verified,
                 HourlyPrice = 600,
                 Latitude = 9.0350,
                 Longitude = 38.7469,
@@ -66,7 +66,7 @@ public static class DatabaseSeeder
             {
                 FullName = " Yonas ",
                 PhoneNumber = "+251911000003",
-                IsVerified = true,
+              VerificationStatus = VerificationStatus.Verified,
                 HourlyPrice = 250,
                 Latitude = 9.0000,
                 Longitude = 38.7600,

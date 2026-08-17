@@ -18,7 +18,7 @@ public class InstructorRepository : IInstructorRepository
     {
         return await _context.Instructors
             .Include(i => i.Vehicles)
-            .Where(i => i.IsVerified)
+            .Where(i => i.VerificationStatus == VerificationStatus.Verified)
             .ToListAsync(ct);
     }
 
@@ -28,6 +28,7 @@ public class InstructorRepository : IInstructorRepository
             .Include(i => i.Vehicles)
             .FirstOrDefaultAsync(i => i.Id == id, ct);
     }
+
     public async Task UpdateAverageRatingAsync(int instructorId, CancellationToken ct)
     {
         var instructor = await _context.Instructors
@@ -40,13 +41,27 @@ public class InstructorRepository : IInstructorRepository
         instructor.AverageRating = instructor.Reviews.Average(r => r.Rating);
         await _context.SaveChangesAsync(ct);
     }
+
     public async Task VerifyAsync(int instructorId, CancellationToken ct)
     {
         var instructor = await _context.Instructors.FindAsync([instructorId], ct);
 
         if (instructor is not null)
         {
-            instructor.IsVerified = true;
+            instructor.VerificationStatus = VerificationStatus.Verified;
+            instructor.RejectionReason = null;
+            await _context.SaveChangesAsync(ct);
+        }
+    }
+
+    public async Task RejectAsync(int instructorId, string reason, CancellationToken ct)
+    {
+        var instructor = await _context.Instructors.FindAsync([instructorId], ct);
+
+        if (instructor is not null)
+        {
+            instructor.VerificationStatus = VerificationStatus.Rejected;
+            instructor.RejectionReason = reason;
             await _context.SaveChangesAsync(ct);
         }
     }
