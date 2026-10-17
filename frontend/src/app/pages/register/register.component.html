@@ -1,0 +1,167 @@
+<div class="auth-container">
+  <div class="auth-card glass-panel">
+    
+    <div class="auth-header">
+      <div class="brand-badge">
+        <i class="bi bi-person-plus-fill"></i>
+      </div>
+      <h2>Create Your Account</h2>
+      <p>Join Addis Ababa's modern driving education platform</p>
+    </div>
+
+    <!-- Role Switcher Tabs -->
+    <div class="role-selector">
+      <button 
+        type="button" 
+        class="role-btn" 
+        [class.active]="selectedRole === 'Student'" 
+        (click)="selectRole('Student')"
+      >
+        <i class="bi bi-mortarboard-fill"></i>
+        <div>
+          <strong>Driving Student</strong>
+          <small>Book lessons & get licensed</small>
+        </div>
+      </button>
+
+      <button 
+        type="button" 
+        class="role-btn" 
+        [class.active]="selectedRole === 'Instructor'" 
+        (click)="selectRole('Instructor')"
+      >
+        <i class="bi bi-car-front-fill"></i>
+        <div>
+          <strong>Certified Instructor</strong>
+          <small>Accept students & set rates</small>
+        </div>
+      </button>
+    </div>
+
+    <!-- Error Alert -->
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <!-- Reactive Form (Module 8) -->
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      
+      <div class="form-group">
+        <label class="form-label"><i class="bi bi-person"></i> Full Name</label>
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="e.g. Abebe Kebede" 
+          formControlName="fullName"
+          [class.is-invalid]="registerForm.get('fullName')?.invalid && registerForm.get('fullName')?.touched"
+        />
+        <small *ngIf="registerForm.get('fullName')?.invalid && registerForm.get('fullName')?.touched" class="form-hint-error">
+          Full name is required (minimum 3 characters).
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><i class="bi bi-phone"></i> Ethiopian Phone Number</label>
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="+251911000000 or 0911000000" 
+          formControlName="phoneNumber"
+          [class.is-invalid]="registerForm.get('phoneNumber')?.invalid && registerForm.get('phoneNumber')?.touched"
+        />
+        <small *ngIf="registerForm.get('phoneNumber')?.invalid && registerForm.get('phoneNumber')?.touched" class="form-hint-error">
+          Valid Ethiopian phone number required (+2519... or 09...).
+        </small>
+      </div>
+
+      <!-- Instructor-Specific Fields -->
+      <ng-container *ngIf="selectedRole === 'Instructor'">
+        <div class="form-group">
+          <label class="form-label"><i class="bi bi-person-vcard"></i> Upload Driver's License / ID Photo *</label>
+          <input 
+            type="file" 
+            class="form-control" 
+            accept="image/*"
+            (change)="onFileSelected($event)"
+            [class.is-invalid]="registerForm.get('licensePhotoUrl')?.invalid && registerForm.get('licensePhotoUrl')?.touched"
+          />
+          <small class="form-hint">Must be a clear photo. Required for verification.</small>
+          <small *ngIf="registerForm.get('licensePhotoUrl')?.invalid && registerForm.get('licensePhotoUrl')?.touched" class="form-hint-error">
+            License photo is required.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="bi bi-cash-stack"></i> Hourly Lesson Rate (ETB)</label>
+          <input 
+            type="number" 
+            class="form-control" 
+            placeholder="e.g. 350" 
+            formControlName="hourlyPrice"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="bi bi-geo-alt-fill"></i> Primary Addis Teaching Area</label>
+          <select class="form-select" formControlName="selectedLocation">
+            <option *ngFor="let loc of locationPresets" [value]="loc.name">
+              {{ loc.name }}
+            </option>
+          </select>
+        </div>
+      </ng-container>
+
+      <div class="form-group">
+        <label class="form-label"><i class="bi bi-key-fill"></i> Password</label>
+        <input 
+          type="password" 
+          class="form-control" 
+          placeholder="••••••••" 
+          formControlName="password"
+          [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+        />
+        <div class="password-requirements mt-2" *ngIf="registerForm.get('password')?.touched || passwordValue.length > 0">
+          <ul class="list-unstyled mb-0" style="font-size: 0.85rem;">
+            <li [ngClass]="hasMinLength ? 'text-success' : 'text-muted'">
+              <i class="bi" [ngClass]="hasMinLength ? 'bi-check-circle-fill' : 'bi-circle'"></i> At least 8 characters
+            </li>
+            <li [ngClass]="hasUpperCase ? 'text-success' : 'text-muted'">
+              <i class="bi" [ngClass]="hasUpperCase ? 'bi-check-circle-fill' : 'bi-circle'"></i> One uppercase letter
+            </li>
+            <li [ngClass]="hasLowerCase ? 'text-success' : 'text-muted'">
+              <i class="bi" [ngClass]="hasLowerCase ? 'bi-check-circle-fill' : 'bi-circle'"></i> One lowercase letter
+            </li>
+            <li [ngClass]="hasNumber ? 'text-success' : 'text-muted'">
+              <i class="bi" [ngClass]="hasNumber ? 'bi-check-circle-fill' : 'bi-circle'"></i> One number
+            </li>
+            <li [ngClass]="hasSpecialChar ? 'text-success' : 'text-muted'">
+              <i class="bi" [ngClass]="hasSpecialChar ? 'bi-check-circle-fill' : 'bi-circle'"></i> One special character
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><i class="bi bi-shield-check"></i> Confirm Password</label>
+        <input 
+          type="password" 
+          class="form-control" 
+          placeholder="••••••••" 
+          formControlName="confirmPassword"
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-submit" [disabled]="loading">
+        <i class="bi bi-person-plus-fill"></i> {{ loading ? 'Creating account...' : 'Create ' + selectedRole + ' Account' }}
+      </button>
+
+    </form>
+
+    <div class="auth-footer">
+      <span>Already have an account? </span>
+      <a routerLink="/login" class="link-login">Sign In</a>
+    </div>
+
+  </div>
+</div>

@@ -33,9 +33,14 @@ public class UpdateBookingStatusHandler : IRequestHandler<UpdateBookingStatusCom
         {
             Id = booking.Id,
             StudentId = booking.StudentId,
+            StudentName = booking.Student?.FullName ?? "",
             InstructorId = booking.InstructorId,
+            InstructorName = booking.Instructor?.FullName ?? "",
             ScheduledAt = booking.ScheduledAt,
-            Status = booking.Status.ToString()
+            Status = booking.Status.ToString(),
+            StudentPhoneNumber = (booking.Status == BookingStatus.Confirmed || booking.Status == BookingStatus.Completed)
+                ? booking.Student?.PhoneNumber
+                : null
         });
     }
 

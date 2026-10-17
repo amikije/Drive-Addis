@@ -1,0 +1,141 @@
+<!-- Elegant, Modern, Centered Login Interface -->
+<div class="login-wrapper">
+  <!-- Subtle ambient glow -->
+  <div class="ambient-glow"></div>
+
+  <div class="login-card glass-panel fade-up">
+    <!-- Header: Brand Logo & Title -->
+    <div class="login-header">
+      <a routerLink="/" class="brand-badge" title="Go to Home">
+        <div class="brand-icon">
+          <i class="bi bi-compass-fill"></i>
+        </div>
+        <span class="brand-name">Drive<span class="brand-accent">Addis</span></span>
+      </a>
+
+      <h1 class="login-title">Welcome back</h1>
+      <p class="login-subtitle">Sign in to your account with your phone number</p>
+    </div>
+
+    <!-- Quick Demo Accounts (Clean, subtle pill chips) -->
+    <div class="demo-selector">
+      <span class="demo-caption">Demo:</span>
+      <div class="demo-chips">
+        <button type="button" class="demo-chip" (click)="fillAdminDemo()" [disabled]="isLocked">
+          <i class="bi bi-shield-lock"></i> Admin
+        </button>
+        <button type="button" class="demo-chip" (click)="fillInstructorDemo()" [disabled]="isLocked">
+          <i class="bi bi-car-front"></i> Instructor
+        </button>
+        <button type="button" class="demo-chip" (click)="fillStudentDemo()" [disabled]="isLocked">
+          <i class="bi bi-mortarboard"></i> Student
+        </button>
+      </div>
+    </div>
+
+    <!-- Security Lockout Banner (Blocked after 5 failed attempts) -->
+    <div *ngIf="isLocked" class="alert-box alert-locked fade-in">
+      <div class="alert-icon">
+        <i class="bi bi-shield-lock-fill"></i>
+      </div>
+      <div class="alert-content">
+        <div class="alert-title">Account Temporarily Blocked</div>
+        <p class="alert-desc">Too many failed login attempts. For security, sign in is paused for 15 minutes.</p>
+        <div class="countdown-badge">
+          <i class="bi bi-stopwatch"></i>
+          <span>Unlocks in: <strong>{{ lockoutTimerDisplay }}</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Remaining Attempts Warning (Visible ONLY after trying 2 times) -->
+    <div *ngIf="remainingAttemptsDisplay !== null && !isLocked" class="alert-box alert-warn fade-in">
+      <div class="alert-icon">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+      <div class="alert-content">
+        <div class="alert-title">Security Notice</div>
+        <p class="alert-desc">
+          Incorrect credentials. You have <strong>{{ remainingAttemptsDisplay }}</strong> attempt{{ remainingAttemptsDisplay === 1 ? '' : 's' }} remaining before a 15-minute lockout.
+        </p>
+      </div>
+    </div>
+
+    <!-- General Error Message (1st attempt or server errors) -->
+    <div *ngIf="errorMessage && !isLocked && remainingAttemptsDisplay === null" class="alert-box alert-error fade-in">
+      <div class="alert-icon">
+        <i class="bi bi-exclamation-circle-fill"></i>
+      </div>
+      <div class="alert-content">
+        <p class="alert-desc">{{ errorMessage }}</p>
+      </div>
+    </div>
+
+    <!-- Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" novalidate>
+      <div class="input-field">
+        <label for="phoneNumber" class="field-label">Phone Number</label>
+        <div class="input-box" [class.field-invalid]="loginForm.get('phoneNumber')?.invalid && loginForm.get('phoneNumber')?.touched">
+          <i class="bi bi-telephone input-icon"></i>
+          <input
+            id="phoneNumber"
+            type="tel"
+            formControlName="phoneNumber"
+            placeholder="+251912345678"
+            autocomplete="tel"
+            [attr.disabled]="isLocked ? true : null"
+          />
+        </div>
+        <div *ngIf="loginForm.get('phoneNumber')?.invalid && loginForm.get('phoneNumber')?.touched" class="field-error">
+          <i class="bi bi-exclamation-circle"></i> Valid Ethiopian number required (+2519...)
+        </div>
+      </div>
+
+      <div class="input-field">
+        <div class="label-split">
+          <label for="password" class="field-label">Password</label>
+          <a routerLink="/forgot-password" class="link-forgot">Forgot password?</a>
+        </div>
+        <div class="input-box" [class.field-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          <i class="bi bi-lock input-icon"></i>
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            [attr.disabled]="isLocked ? true : null"
+          />
+          <button type="button" class="btn-toggle-eye" (click)="showPassword = !showPassword" [disabled]="isLocked" tabindex="-1">
+            <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+          </button>
+        </div>
+        <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="field-error">
+          <i class="bi bi-exclamation-circle"></i> Password must be at least 6 characters
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        class="submit-button"
+        [disabled]="loading || isLocked"
+      >
+        <span class="spinner-dot" *ngIf="loading"></span>
+        <i class="bi bi-lock-fill" *ngIf="isLocked"></i>
+        <i class="bi bi-arrow-right-short" *ngIf="!loading && !isLocked"></i>
+        <span>{{ isLocked ? 'Temporarily Blocked (' + lockoutTimerDisplay + ')' : loading ? 'Signing in…' : 'Sign in' }}</span>
+      </button>
+    </form>
+
+    <!-- Footer Links -->
+    <div class="card-footer">
+      <p class="register-hint">
+        Don't have an account?
+        <a routerLink="/register" class="link-highlight">Create one free <i class="bi bi-arrow-right"></i></a>
+      </p>
+      <a routerLink="/" class="link-home">
+        <i class="bi bi-arrow-left"></i> Back to Home
+      </a>
+    </div>
+  </div>
+</div>

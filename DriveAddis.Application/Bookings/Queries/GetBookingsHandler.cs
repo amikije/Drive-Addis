@@ -25,7 +25,10 @@ public class GetBookingsHandler : IRequestHandler<GetBookingsQuery, List<Booking
             InstructorId = b.InstructorId,
             InstructorName = b.Instructor.FullName,
             ScheduledAt = b.ScheduledAt,
-            Status = b.Status.ToString()
+            Status = b.Status.ToString(),
+            StudentPhoneNumber = (b.Status == Domain.Entities.BookingStatus.Confirmed || b.Status == Domain.Entities.BookingStatus.Completed)
+                ? b.Student.PhoneNumber
+                : null
         }).ToList();
     }
 }

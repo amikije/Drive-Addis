@@ -71,7 +71,34 @@ public class AdminRepository : IAdminRepository
                 HourlyPrice = i.HourlyPrice,
                 VerificationStatus = i.VerificationStatus.ToString(),
                 RejectionReason = i.RejectionReason,
+                LicensePhotoUrl = i.LicensePhotoUrl,
                 CreatedAt = i.CreatedAt
+            })
+            .ToListAsync(ct);
+    }
+
+    public async Task<List<StudentAdminListItemDto>> GetStudentsAsync(string? search, CancellationToken ct)
+    {
+        var query = _context.Students.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(s =>
+                s.FullName.Contains(search) || 
+                s.PhoneNumber.Contains(search) || 
+                (s.LicenseNumber != null && s.LicenseNumber.Contains(search)));
+        }
+
+        return await query
+            .OrderByDescending(s => s.CreatedAt)
+            .Select(s => new StudentAdminListItemDto
+            {
+                Id = s.Id,
+                FullName = s.FullName,
+                PhoneNumber = s.PhoneNumber,
+                LicenseNumber = s.LicenseNumber,
+                CreatedAt = s.CreatedAt,
+                TotalBookings = s.Bookings.Count
             })
             .ToListAsync(ct);
     }

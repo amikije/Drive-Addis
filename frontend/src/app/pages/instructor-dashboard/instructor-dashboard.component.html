@@ -1,0 +1,187 @@
+<div class="container dashboard-container">
+  
+  <!-- Dashboard Top Header -->
+  <div class="dashboard-header">
+    <div class="user-greeting">
+      <div class="badge-row" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+        <span class="badge badge-confirmed"><i class="bi bi-car-front-fill"></i> Instructor Portal</span>
+        <span class="badge badge-verified"><i class="bi bi-patch-check-fill"></i> RTA Verified</span>
+      </div>
+      <h1>Welcome, {{ currentUser?.fullName || 'Instructor' }}!</h1>
+      <p class="greeting-sub">
+        <span *ngIf="currentUser?.phoneNumber"><i class="bi bi-phone"></i> {{ currentUser?.phoneNumber }} &bull; </span>
+        Manage your student bookings, confirm practice routes, and log completed driving lessons.
+      </p>
+    </div>
+    <div class="header-actions">
+      <button (click)="fetchBookings()" class="btn btn-outline btn-sm">
+        <i class="bi bi-arrow-clockwise"></i> Refresh Schedule
+      </button>
+    </div>
+  </div>
+
+  <!-- Application Approval Notice Banner -->
+  <div class="approval-banner glass-panel fade-up">
+    <div class="approval-icon">
+      <i class="bi bi-patch-check-fill"></i>
+    </div>
+    <div class="approval-content">
+      <div class="approval-title-row">
+        <h3>Application Approved & Verified</h3>
+        <span class="badge badge-verified"><i class="bi bi-shield-check"></i> RTA Official Partner</span>
+      </div>
+      <p>Congratulations! Your instructor application has been approved by the Admin. Your profile is active and public on DriveAddis, and students can now book driving sessions with you.</p>
+    </div>
+  </div>
+
+  <!-- Metric Overview Cards (Signal Driven) -->
+  <div class="metrics-grid">
+    <div class="metric-card glass-panel">
+      <div class="metric-icon" style="color: var(--primary);"><i class="bi bi-person-lines-fill"></i></div>
+      <div class="metric-info">
+        <span class="metric-val">{{ stateStore.bookings().length }}</span>
+        <span class="metric-name">Total Lesson Requests</span>
+      </div>
+    </div>
+
+    <div class="metric-card glass-panel">
+      <div class="metric-icon" style="color: var(--amber);"><i class="bi bi-hourglass-split"></i></div>
+      <div class="metric-info">
+        <span class="metric-val">{{ stateStore.pendingBookingsCount() }}</span>
+        <span class="metric-name">Pending Review</span>
+      </div>
+    </div>
+
+    <div class="metric-card glass-panel">
+      <div class="metric-icon" style="color: var(--cyan);"><i class="bi bi-calendar2-check-fill"></i></div>
+      <div class="metric-info">
+        <span class="metric-val">{{ stateStore.confirmedBookingsCount() }}</span>
+        <span class="metric-name">Upcoming Sessions</span>
+      </div>
+    </div>
+
+    <div class="metric-card glass-panel">
+      <div class="metric-icon" style="color: var(--accent);"><i class="bi bi-cash-stack"></i></div>
+      <div class="metric-info">
+        <span class="metric-val">{{ estimatedEarnings() }} <small style="font-size: 0.9rem;">ETB</small></span>
+        <span class="metric-name">Earned ({{ stateStore.completedBookingsCount() }} Completed)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Lesson Requests Section -->
+  <div class="section-card glass-panel">
+    
+    <div class="card-header-bar">
+      <div class="title-with-badge">
+        <h2>Student Lesson Schedule</h2>
+        <span class="badge badge-vehicle">{{ filteredBookings().length }} Records</span>
+      </div>
+
+      <!-- Status Filter Tabs -->
+      <div class="filter-tabs">
+        <button class="tab-btn" [class.active]="statusFilter() === 'ALL'" (click)="setStatusFilter('ALL')">All</button>
+        <button class="tab-btn" [class.active]="statusFilter() === 'PENDING'" (click)="setStatusFilter('PENDING')">Pending</button>
+        <button class="tab-btn" [class.active]="statusFilter() === 'CONFIRMED'" (click)="setStatusFilter('CONFIRMED')">Confirmed</button>
+        <button class="tab-btn" [class.active]="statusFilter() === 'COMPLETED'" (click)="setStatusFilter('COMPLETED')">Completed</button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="stateStore.loadingBookings()" class="loading-state" style="padding: 3rem;">
+      <div class="spinner"></div>
+      <p>Loading your schedule...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!stateStore.loadingBookings() && filteredBookings().length === 0" class="empty-state">
+      <i class="bi bi-calendar-check empty-icon"></i>
+      <h3>No lesson requests in this view</h3>
+      <p>When students book driving sessions with you, they will appear here for confirmation.</p>
+    </div>
+
+    <!-- Bookings Table (MatTable Enterprise Data Grid Pattern - Module 9) -->
+    <div *ngIf="!stateStore.loadingBookings() && filteredBookings().length > 0" class="table-responsive">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th># ID</th>
+            <th>Student Name</th>
+            <th>Scheduled Date & Time</th>
+            <th>Current Status</th>
+            <th style="text-align: right;">Optimistic Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let b of filteredBookings()">
+            <td><strong>#{{ b.id }}</strong></td>
+            <td>
+              <div class="student-cell">
+                <div class="student-avatar-icon"><i class="bi bi-person-fill"></i></div>
+                <div class="student-info-col">
+                  <div style="font-weight: 700; color: var(--text-main);">{{ b.studentName }}</div>
+                  <small style="color: var(--text-dim);">Student ID: #{{ b.studentId }}</small>
+                  
+                  <!-- Student phone revealed ONLY after booking is Confirmed or Completed -->
+                  <div *ngIf="(b.status === 'Confirmed' || b.status === 'Completed') && b.studentPhoneNumber" class="student-phone-revealed">
+                    <a [href]="'tel:' + b.studentPhoneNumber" class="phone-link" title="Call Student">
+                      <i class="bi bi-telephone-fill"></i> {{ b.studentPhoneNumber }}
+                    </a>
+                  </div>
+
+                  <div *ngIf="b.status === 'Pending'" class="student-phone-locked" title="Student phone number will be revealed after you confirm this booking">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    <span>Phone hidden until confirmed</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div><i class="bi bi-calendar-event"></i> {{ b.scheduledAt | date:'mediumDate' }}</div>
+              <small style="color: var(--text-muted);"><i class="bi bi-clock"></i> {{ b.scheduledAt | date:'shortTime' }}</small>
+            </td>
+            <td>
+              <span *ngIf="b.status === 'Pending'" class="badge badge-pending">Pending</span>
+              <span *ngIf="b.status === 'Confirmed'" class="badge badge-confirmed">Confirmed</span>
+              <span *ngIf="b.status === 'Completed'" class="badge badge-completed">Completed</span>
+              <span *ngIf="b.status === 'Cancelled'" class="badge badge-cancelled">Cancelled</span>
+            </td>
+            <td style="text-align: right;">
+              <div class="row-actions">
+                <!-- If Pending -> Accept or Decline -->
+                <ng-container *ngIf="b.status === 'Pending'">
+                  <button (click)="updateStatusOptimistic(b, 'Confirmed')" class="btn btn-accent btn-sm" title="Accept Lesson">
+                    <i class="bi bi-check-lg"></i> Accept
+                  </button>
+                  <button (click)="updateStatusOptimistic(b, 'Cancelled')" class="btn btn-danger btn-sm" title="Decline Lesson">
+                    <i class="bi bi-x-lg"></i> Decline
+                  </button>
+                </ng-container>
+
+                <!-- If Confirmed -> Mark Completed or Cancel -->
+                <ng-container *ngIf="b.status === 'Confirmed'">
+                  <button (click)="updateStatusOptimistic(b, 'Completed')" class="btn btn-primary btn-sm" title="Mark Completed">
+                    <i class="bi bi-check-circle"></i> Mark Completed
+                  </button>
+                  <button (click)="updateStatusOptimistic(b, 'Cancelled')" class="btn btn-outline btn-sm" title="Cancel">
+                    Cancel
+                  </button>
+                </ng-container>
+
+                <!-- If Completed / Cancelled -->
+                <span *ngIf="b.status === 'Completed'" style="color: var(--accent); font-size: 0.85rem; font-weight: 700;">
+                  <i class="bi bi-check-all"></i> Lesson Finished
+                </span>
+                <span *ngIf="b.status === 'Cancelled'" style="color: var(--text-dim); font-size: 0.85rem;">
+                  Cancelled
+                </span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</div>

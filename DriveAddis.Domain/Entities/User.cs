@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace DriveAddis.Domain.Entities;
 
 public enum UserRole
@@ -7,11 +9,9 @@ public enum UserRole
     Admin
 }
 
-public class User
+public class User : IdentityUser<int>
 {
-    public int Id { get; set; }
-    public string PhoneNumber { get; set; } = string.Empty;
-    public string PasswordHash { get; set; } = string.Empty;
+    // Id, PhoneNumber, and PasswordHash are inherited from IdentityUser<int>
     public UserRole Role { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

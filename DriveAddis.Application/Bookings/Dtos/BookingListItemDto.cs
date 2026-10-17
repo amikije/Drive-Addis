@@ -9,4 +9,5 @@ public class BookingListItemDto
     public string InstructorName { get; set; } = string.Empty;
     public DateTime ScheduledAt { get; set; }
     public string Status { get; set; } = string.Empty;
+    public string? StudentPhoneNumber { get; set; }
 }

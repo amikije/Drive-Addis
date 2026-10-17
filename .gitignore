@@ -26,3 +26,10 @@ appsettings.Local.json
 # NuGet
 *.nupkg
 packages/
+
+# Test artifacts and Playwright auth sessions
+TestResults/
+playwright-report/
+test-results/
+playwright/.auth/
+*.local.json

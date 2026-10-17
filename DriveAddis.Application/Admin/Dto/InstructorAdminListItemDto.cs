@@ -8,5 +8,6 @@ public class InstructorAdminListItemDto
     public decimal HourlyPrice { get; set; }
     public string VerificationStatus { get; set; } = string.Empty;
     public string? RejectionReason { get; set; }
+    public string? LicensePhotoUrl { get; set; }
     public DateTime CreatedAt { get; set; }
 }

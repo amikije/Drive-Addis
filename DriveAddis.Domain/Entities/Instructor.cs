@@ -24,4 +24,5 @@ public class Instructor
     public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 }

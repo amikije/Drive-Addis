@@ -3,4 +3,5 @@
   <Project Path="DriveAddis.Application/DriveAddis.Application.csproj" />
   <Project Path="DriveAddis.Domain/DriveAddis.Domain.csproj" />
   <Project Path="DriveAddis.Infrastructure/DriveAddis.Infrastructure.csproj" />
+  <Project Path="DriveAddis.Tests/DriveAddis.Tests.csproj" />
 </Solution>

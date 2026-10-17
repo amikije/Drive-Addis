@@ -40,4 +40,11 @@ public class AdminController : ControllerBase
         var result = await _mediator.Send(new GetBookingsQuery(null, null), ct);
         return Ok(result);
     }
+
+    [HttpGet("students")]
+    public async Task<IActionResult> GetStudents([FromQuery] string? search, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetStudentsForAdminQuery(search), ct);
+        return Ok(result);
+    }
 }

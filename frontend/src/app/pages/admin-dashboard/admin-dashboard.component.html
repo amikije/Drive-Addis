@@ -1,0 +1,814 @@
+<div class="admin-app" [class.dark-theme]="themeService.isDark()">
+
+  <!-- ─── SIDEBAR ─── -->
+  <aside>
+    <div class="logo">
+      <i>
+        <svg class="i" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="m15.5 8.5-2 5-5 2 2-5z"/>
+        </svg>
+      </i>
+      Drive<b>Addis</b>
+    </div>
+
+    <div class="lbl">Manage</div>
+    
+    <button class="nav" [class.active]="activeTab === 'overview'" [attr.aria-current]="activeTab === 'overview' ? 'page' : null" (click)="setTab('overview')">
+      <svg class="i" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v10h14V10"/></svg>
+      Overview
+    </button>
+    
+    <button class="nav" [class.active]="activeTab === 'instructors'" [attr.aria-current]="activeTab === 'instructors' ? 'page' : null" (click)="setTab('instructors')">
+      <svg class="i" viewBox="0 0 24 24">
+        <circle cx="9" cy="8" r="3.5"/>
+        <path d="M2.5 20c.6-3.6 3-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .6 3.2 2.4 3.5 5.2"/>
+      </svg>
+      Instructors
+      <span class="n" *ngIf="pendingInstructorsCount > 0">{{ pendingInstructorsCount }}</span>
+    </button>
+
+    <button class="nav" [class.active]="activeTab === 'bookings'" [attr.aria-current]="activeTab === 'bookings' ? 'page' : null" (click)="setTab('bookings')">
+      <svg class="i" viewBox="0 0 24 24">
+        <rect x="3" y="5" width="18" height="16" rx="3"/>
+        <path d="M8 3v4M16 3v4M3 10h18"/>
+      </svg>
+      Bookings
+      <span class="n" *ngIf="pendingBookingsCount > 0" style="background:#06b6d4; color:#fff;">{{ pendingBookingsCount }}</span>
+    </button>
+
+    <button class="nav" [class.active]="activeTab === 'students'" [attr.aria-current]="activeTab === 'students' ? 'page' : null" (click)="setTab('students')">
+      <svg class="i" viewBox="0 0 24 24">
+        <path d="m2 9 10-5 10 5-10 5zM6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/>
+      </svg>
+      Students
+      <span class="n" *ngIf="students.length > 0" style="background: var(--soft); color: var(--brand);">{{ students.length }}</span>
+    </button>
+
+    <button class="nav" (click)="onComingSoon('Payments')">
+      <svg class="i" viewBox="0 0 24 24">
+        <rect x="2" y="6" width="20" height="12" rx="3"/>
+        <circle cx="12" cy="12" r="2.5"/>
+      </svg>
+      Payments
+    </button>
+
+    <div class="lbl">System</div>
+
+    <button class="nav" (click)="onComingSoon('Settings')">
+      <svg class="i" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>
+      </svg>
+      Settings
+    </button>
+
+    <a routerLink="/" class="nav" title="Switch to public site view">
+      <svg class="i" viewBox="0 0 24 24">
+        <path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>
+        <path d="m9 12 2 2 4-4"/>
+      </svg>
+      Public Site
+    </a>
+
+    <div class="gr"></div>
+
+    <div class="prof">
+      <b>
+        <svg class="i" viewBox="0 0 24 24">
+          <path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+      </b>
+      <span>
+        {{ authService.getUser()?.fullName || 'System Admin' }}
+        <small>{{ authService.getUser()?.phoneNumber || '+251 900 000 000' }}</small>
+      </span>
+      <button aria-label="Log out" (click)="logout()" title="Log out">
+        <svg class="i" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN CONTENT ─── -->
+  <main>
+    <!-- Topbar -->
+    <div class="top">
+      <label class="search">
+        <svg class="i" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="m20 20-3.5-3.5"/>
+        </svg>
+        <input 
+          [(ngModel)]="searchQuery" 
+          (input)="onSearchInput()" 
+          placeholder="Search instructors by name or phone" 
+          aria-label="Search instructors" 
+        />
+      </label>
+
+      <div class="sp"></div>
+
+      <span class="date">{{ currentDateStr }}</span>
+
+      <!-- Dark Mode Toggle -->
+      <button 
+        class="ib" 
+        (click)="toggleTheme()" 
+        [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'" 
+        aria-label="Toggle dark mode"
+      >
+        <svg class="i" viewBox="0 0 24 24" *ngIf="!themeService.isDark()">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+        <svg class="i" viewBox="0 0 24 24" *ngIf="themeService.isDark()">
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </button>
+
+      <!-- Notification Bell with Dot -->
+      <button class="ib" (click)="onBellClick()" title="Notifications" aria-label="Notifications">
+        <svg class="i" viewBox="0 0 24 24">
+          <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/>
+        </svg>
+        <span class="dot" *ngIf="pendingInstructorsCount > 0 || pendingBookingsCount > 0"></span>
+      </button>
+    </div>
+
+    <!-- ─── OVERVIEW TAB ─── -->
+    <div id="view" *ngIf="activeTab === 'overview'">
+      <!-- Hero -->
+      <div class="hero">
+        <div>
+          <h1>{{ greeting }}, Admin</h1>
+          <p>
+            {{ pendingInstructorsCount > 0 
+                ? pendingInstructorsCount + (pendingInstructorsCount === 1 ? ' instructor is' : ' instructors are') + ' waiting for your approval. Verified instructors can start taking bookings right away.'
+                : 'Everything is reviewed. All certified instructors are active on public listings.' }}
+          </p>
+          <button class="cta" *ngIf="pendingInstructorsCount > 0" (click)="openFirstPending()">
+            Review now 
+            <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+          <button class="cta g" (click)="setTab('instructors')">All instructors</button>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats">
+        <!-- Students -->
+        <div class="card stat">
+          <div class="h">
+            <span class="ic">
+              <svg class="i" viewBox="0 0 24 24">
+                <circle cx="9" cy="8" r="3.5"/>
+                <path d="M2.5 20c.6-3.6 3-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .6 3.2 2.4 3.5 5.2"/>
+              </svg>
+            </span>
+            Students
+          </div>
+          <strong>{{ dashboardStats?.totalStudents || 10 }}</strong>
+          <div class="f">
+            <span class="up">+2 this week</span>
+            <svg width="80" height="28" viewBox="0 0 80 28">
+              <polyline [attr.points]="sparklineStudents" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Instructors -->
+        <div class="card stat">
+          <div class="h">
+            <span class="ic">
+              <svg class="i" viewBox="0 0 24 24">
+                <path d="M5 17h14M3 13l2-6h14l2 6v4H3zM7 17v2M17 17v2"/>
+              </svg>
+            </span>
+            Instructors
+          </div>
+          <strong>{{ instructors.length || dashboardStats?.totalInstructors || 6 }}</strong>
+          <div class="f">
+            <span class="up">{{ dashboardStats?.verifiedInstructors || (instructors.length - pendingInstructorsCount) }} active</span>
+            <svg width="80" height="28" viewBox="0 0 80 28">
+              <polyline [attr.points]="sparklineInstructors" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Bookings -->
+        <div class="card stat">
+          <div class="h">
+            <span class="ic">
+              <svg class="i" viewBox="0 0 24 24">
+                <rect x="3" y="5" width="18" height="16" rx="3"/>
+                <path d="M8 3v4M16 3v4M3 10h18"/>
+              </svg>
+            </span>
+            Bookings
+          </div>
+          <strong>{{ bookings.length || dashboardStats?.totalBookings || 3 }}</strong>
+          <div class="f">
+            <span class="up">+3 this week</span>
+            <svg width="80" height="28" viewBox="0 0 80 28">
+              <polyline [attr.points]="sparklineBookings" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Pending Approvals -->
+        <div class="card stat">
+          <div class="h">
+            <span class="ic">
+              <svg class="i" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 7v5l3 2"/>
+              </svg>
+            </span>
+            Pending approvals
+          </div>
+          <strong>{{ pendingInstructorsCount }}</strong>
+          <div class="f">
+            <span class="up" [class.w]="pendingInstructorsCount > 0">
+              {{ pendingInstructorsCount > 0 ? 'Needs action' : 'All clear' }}
+            </span>
+            <svg width="80" height="28" viewBox="0 0 80 28">
+              <polyline [attr.points]="sparklinePending" fill="none" [attr.stroke]="pendingInstructorsCount > 0 ? 'var(--warn)' : 'var(--brand)'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid 2: Sign-ups Bar Chart & Needs Attention -->
+      <div class="grid2">
+        <!-- New sign-ups chart -->
+        <div class="card">
+          <div class="ch">
+            <div>
+              <h2>New sign-ups</h2>
+              <small>Students and instructors, last 7 days</small>
+            </div>
+            <span class="pill ok">+16 total</span>
+          </div>
+
+          <svg viewBox="0 0 560 210" width="100%" role="img" aria-label="Sign-ups per day this week">
+            <!-- Grid lines -->
+            <line x1="30" x2="550" y1="170" y2="170" stroke="var(--line)"/>
+            <text x="0" y="174" font-size="11" fill="var(--mut)">0</text>
+            <line x1="30" x2="550" y1="95" y2="95" stroke="var(--line)"/>
+            <text x="0" y="99" font-size="11" fill="var(--mut)">2</text>
+            <line x1="30" x2="550" y1="20" y2="20" stroke="var(--line)"/>
+            <text x="0" y="24" font-size="11" fill="var(--mut)">4</text>
+            
+            <!-- Mon -->
+            <rect x="46" y="132" width="44" height="38" rx="10" fill="var(--soft)"/>
+            <text x="68" y="196" font-size="12" text-anchor="middle" fill="var(--mut)">Mon</text>
+
+            <!-- Tue -->
+            <rect x="118" y="57" width="44" height="113" rx="10" fill="var(--soft)"/>
+            <text x="140" y="196" font-size="12" text-anchor="middle" fill="var(--mut)">Tue</text>
+
+            <!-- Wed -->
+            <rect x="190" y="95" width="44" height="75" rx="10" fill="var(--soft)"/>
+            <text x="212" y="196" font-size="12" text-anchor="middle" fill="var(--mut)">Wed</text>
+
+            <!-- Thu -->
+            <rect x="262" y="170" width="44" height="3" rx="1.5" fill="var(--soft)"/>
+            <text x="284" y="196" font-size="12" text-anchor="middle" fill="var(--mut)">Thu</text>
+
+            <!-- Fri -->
+            <rect x="334" y="20" width="44" height="150" rx="10" fill="var(--brand)"/>
+            <text x="356" y="12" font-size="12" font-weight="700" text-anchor="middle" fill="var(--brand)">4</text>
+            <text x="356" y="196" font-size="12" text-anchor="middle" fill="var(--mut)">Fri</text>
+
+            <!-- Sat -->
+            <rect x="406" y="95" width="44" height="75" rx="10" fill="var(--soft)"/>
+            <text x="428" y="196" font-size="12" text-anchor="middle" fill="var(--mut)">Sat</text>
+
+            <!-- Sun -->
+            <rect x="478" y="20" width="44" height="150" rx="10" fill="var(--brand)"/>
+            <text x="500" y="12" font-size="12" font-weight="700" text-anchor="middle" fill="var(--brand)">4</text>
+            <text x="500" y="196" font-size="12" text-anchor="middle" fill="var(--mut)">Sun</text>
+          </svg>
+        </div>
+
+        <!-- Needs Attention -->
+        <div class="card">
+          <div class="ch">
+            <h2>Needs attention</h2>
+          </div>
+
+          <div class="row" *ngIf="pendingInstructorsCount > 0">
+            <span class="ia w">
+              <svg class="i" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 7v5l3 2"/>
+              </svg>
+            </span>
+            <div class="t">
+              <b>{{ pendingInstructorsCount }} {{ pendingInstructorsCount === 1 ? 'instructor' : 'instructors' }} waiting for verification</b>
+              <small>Review their license ID</small>
+            </div>
+            <button class="btn" (click)="openFirstPending()">Review</button>
+          </div>
+
+          <div class="row" *ngIf="pendingBookingsCount > 0">
+            <span class="ia b">
+              <svg class="i" viewBox="0 0 24 24">
+                <rect x="3" y="5" width="18" height="16" rx="3"/>
+                <path d="M8 3v4M16 3v4M3 10h18"/>
+              </svg>
+            </span>
+            <div class="t">
+              <b>{{ pendingBookingsCount }} {{ pendingBookingsCount === 1 ? 'booking' : 'bookings' }} pending confirmation</b>
+              <small>Student is waiting for schedule confirmation</small>
+            </div>
+            <button class="btn o" (click)="setTab('bookings')">Open</button>
+          </div>
+
+          <div class="row" *ngIf="instructorsWithNoLicenseCount > 0">
+            <span class="ia r">
+              <svg class="i" viewBox="0 0 24 24">
+                <path d="M12 3 2 20h20zM12 10v4M12 17h.01"/>
+              </svg>
+            </span>
+            <div class="t">
+              <b>{{ instructorsWithNoLicenseCount }} {{ instructorsWithNoLicenseCount === 1 ? 'instructor has' : 'instructors have' }} no license ID</b>
+              <small>Ask them to upload it</small>
+            </div>
+            <button class="btn o" (click)="setInstructorFilter('noid')">View</button>
+          </div>
+
+          <div class="row" *ngIf="pendingInstructorsCount === 0 && pendingBookingsCount === 0 && instructorsWithNoLicenseCount === 0">
+            <span class="ia g">
+              <svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+            </span>
+            <div class="t">
+              <b>All caught up</b>
+              <small>Nothing needs your attention right now</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid 3: Upcoming lessons & Recent activity -->
+      <div class="grid3">
+        <!-- Upcoming Lessons -->
+        <div class="card">
+          <div class="ch">
+            <h2>Upcoming lessons</h2>
+            <button class="lnk" (click)="setTab('bookings')">See all</button>
+          </div>
+
+          <div class="row" *ngFor="let b of upcomingBookings">
+            <span class="av">{{ (b.studentName ? b.studentName.charAt(0) : 'S') | uppercase }}</span>
+            <div class="t">
+              <b>{{ b.studentName || 'Student' }} with {{ b.instructorName }}</b>
+              <small>{{ b.scheduledAt | date:'d MMM, HH:mm' }}</small>
+            </div>
+            <span class="pill" [ngClass]="b.status === 'Confirmed' ? 'ok' : 'wait'">{{ b.status }}</span>
+          </div>
+
+          <div class="mut" *ngIf="upcomingBookings.length === 0" style="padding: 24px; text-align: center;">
+            No upcoming bookings yet.
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+          <div class="ch">
+            <h2>Recent activity</h2>
+          </div>
+
+          <div class="row">
+            <span class="ia b">
+              <svg class="i" viewBox="0 0 24 24">
+                <circle cx="9" cy="8" r="3.5"/>
+                <path d="M2.5 20c.6-3.6 3-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .6 3.2 2.4 3.5 5.2"/>
+              </svg>
+            </span>
+            <div class="t">
+              <b>Instructor Test 1236 applied</b>
+              <small>Today, 08:12</small>
+            </div>
+          </div>
+
+          <div class="row">
+            <span class="ia g">
+              <svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+            </span>
+            <div class="t">
+              <b>Akmel was verified</b>
+              <small>4 Sep, 14:30</small>
+            </div>
+          </div>
+
+          <div class="row">
+            <span class="ia b">
+              <svg class="i" viewBox="0 0 24 24">
+                <rect x="3" y="5" width="18" height="16" rx="3"/>
+                <path d="M8 3v4M16 3v4M3 10h18"/>
+              </svg>
+            </span>
+            <div class="t">
+              <b>Liya M. booked Abebe Kebede</b>
+              <small>Yesterday</small>
+            </div>
+          </div>
+
+          <div class="row">
+            <span class="ia b">
+              <svg class="i" viewBox="0 0 24 24">
+                <circle cx="9" cy="8" r="3.5"/>
+                <path d="M2.5 20c.6-3.6 3-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .6 3.2 2.4 3.5 5.2"/>
+              </svg>
+            </span>
+            <div class="t">
+              <b>Hanna T. joined as a student</b>
+              <small>2 days ago</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── INSTRUCTORS TAB ─── -->
+    <div id="view" *ngIf="activeTab === 'instructors'">
+      <!-- Filter Chips -->
+      <div class="tabs">
+        <button class="chip" [class.active]="instructorFilter === 'all'" [attr.aria-pressed]="instructorFilter === 'all'" (click)="setInstructorFilter('all')">
+          All <em>{{ instructors.length }}</em>
+        </button>
+        <button class="chip" [class.active]="instructorFilter === 'wait'" [attr.aria-pressed]="instructorFilter === 'wait'" (click)="setInstructorFilter('wait')">
+          Pending <em>{{ pendingInstructorsCount }}</em>
+        </button>
+        <button class="chip" [class.active]="instructorFilter === 'noid'" [attr.aria-pressed]="instructorFilter === 'noid'" (click)="setInstructorFilter('noid')">
+          No license ID <em>{{ instructorsWithNoLicenseCount }}</em>
+        </button>
+        <button class="chip" [class.active]="instructorFilter === 'sus'" [attr.aria-pressed]="instructorFilter === 'sus'" (click)="setInstructorFilter('sus')">
+          Suspended <em>{{ suspendedCount }}</em>
+        </button>
+      </div>
+
+      <!-- Instructors Table Card -->
+      <div class="card" style="padding: 8px 12px;">
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Instructor</th>
+                <th>Joined</th>
+                <th>Rate</th>
+                <th>License ID</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr 
+                class="c" 
+                *ngFor="let x of filteredInstructors"
+                (click)="openDrawer(x)"
+              >
+                <td>
+                  <div class="who">
+                    <span class="av">{{ x.fullName.charAt(0).toUpperCase() }}</span>
+                    <div>
+                      <b>{{ x.fullName }}</b>
+                      <small>{{ x.phoneNumber }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td class="mut">{{ x.createdAt | date:'d MMM y' }}</td>
+                <td>
+                  <b>{{ x.hourlyPrice }}</b> <span class="mut">ETB</span>
+                </td>
+                <td>
+                  <span class="pill ok" *ngIf="x.licensePhotoUrl">Uploaded</span>
+                  <span class="mut" *ngIf="!x.licensePhotoUrl">Missing</span>
+                </td>
+                <td>
+                  <span 
+                    class="pill"
+                    [ngClass]="{
+                      'ok': x.verificationStatus === 'Verified',
+                      'wait': x.verificationStatus === 'Pending',
+                      'sus': x.verificationStatus === 'Rejected'
+                    }"
+                  >
+                    {{ x.verificationStatus }}
+                  </span>
+                </td>
+                <td class="tr">
+                  <button 
+                    class="btn ok" 
+                    *ngIf="x.verificationStatus === 'Pending'" 
+                    (click)="verifyInstructor(x.id); $event.stopPropagation()"
+                  >
+                    <svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+                    Verify
+                  </button>
+                  <span class="mut" *ngIf="x.verificationStatus !== 'Pending'">
+                    <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                  </span>
+                </td>
+              </tr>
+
+              <tr *ngIf="filteredInstructors.length === 0">
+                <td colspan="6" class="mut" style="padding: 40px; text-align: center;">
+                  No instructors match. Clear the search or pick another filter.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── BOOKINGS TAB ─── -->
+    <div id="view" *ngIf="activeTab === 'bookings'">
+      <div class="card" style="padding: 8px 12px;">
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Instructor</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let b of bookings">
+                <td>
+                  <div class="who">
+                    <span class="av">{{ (b.studentName ? b.studentName.charAt(0) : 'S') | uppercase }}</span>
+                    <b>{{ b.studentName || 'Student' }}</b>
+                  </div>
+                </td>
+                <td>{{ b.instructorName }}</td>
+                <td class="mut">{{ b.scheduledAt | date:'d MMM y, HH:mm' }}</td>
+                <td>
+                  <span 
+                    class="pill" 
+                    [ngClass]="{
+                      'ok': b.status === 'Confirmed' || b.status === 'Completed',
+                      'wait': b.status === 'Pending',
+                      'sus': b.status === 'Cancelled'
+                    }"
+                  >
+                    {{ b.status }}
+                  </span>
+                </td>
+                <td class="tr">
+                  <button 
+                    class="btn ok" 
+                    *ngIf="b.status === 'Pending'" 
+                    (click)="confirmBooking(b)"
+                  >
+                    <svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+                    Confirm
+                  </button>
+                </td>
+              </tr>
+
+              <tr *ngIf="bookings.length === 0">
+                <td colspan="5" class="mut" style="padding: 40px; text-align: center;">
+                  No bookings found on the platform yet.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── STUDENTS TAB ─── -->
+    <div id="view" *ngIf="activeTab === 'students'">
+      <!-- Filter Chips -->
+      <div class="tabs">
+        <button class="chip" [class.active]="studentFilter === 'all'" [attr.aria-pressed]="studentFilter === 'all'" (click)="setStudentFilter('all')">
+          All Students <em>{{ students.length }}</em>
+        </button>
+        <button class="chip" [class.active]="studentFilter === 'with-bookings'" [attr.aria-pressed]="studentFilter === 'with-bookings'" (click)="setStudentFilter('with-bookings')">
+          With Bookings <em>{{ studentsWithBookingsCount }}</em>
+        </button>
+        <button class="chip" [class.active]="studentFilter === 'no-bookings'" [attr.aria-pressed]="studentFilter === 'no-bookings'" (click)="setStudentFilter('no-bookings')">
+          New Learners <em>{{ studentsWithoutBookingsCount }}</em>
+        </button>
+      </div>
+
+      <!-- Students Table Card -->
+      <div class="card" style="padding: 8px 12px;">
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Phone Number</th>
+                <th>Registered Date</th>
+                <th>License / Permit</th>
+                <th>Total Bookings</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of filteredStudents">
+                <td>
+                  <div class="who">
+                    <span class="av" style="background: var(--soft); color: var(--brand);">
+                      {{ (s.fullName ? s.fullName.charAt(0) : 'S') | uppercase }}
+                    </span>
+                    <div>
+                      <b>{{ s.fullName || 'Student #' + s.id }}</b>
+                      <small>ID: #STU-{{ s.id }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td style="font-family: var(--font-mono, monospace); font-weight: 600;">
+                  {{ s.phoneNumber }}
+                </td>
+                <td class="mut">
+                  {{ s.createdAt | date:'d MMM y' }}
+                </td>
+                <td>
+                  <span class="pill ok" *ngIf="s.licenseNumber">
+                    {{ s.licenseNumber }}
+                  </span>
+                  <span class="mut" *ngIf="!s.licenseNumber">
+                    Not added yet
+                  </span>
+                </td>
+                <td>
+                  <span class="pill" [ngClass]="s.totalBookings > 0 ? 'ok' : 'wait'">
+                    {{ s.totalBookings }} {{ s.totalBookings === 1 ? 'lesson' : 'lessons' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="pill ok">
+                    Registered
+                  </span>
+                </td>
+              </tr>
+
+              <tr *ngIf="filteredStudents.length === 0">
+                <td colspan="6" class="mut" style="padding: 40px; text-align: center;">
+                  No students match your search or filter.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ─── SLIDE-OUT INSTRUCTOR DETAILS DRAWER ─── -->
+<div class="ov" [class.on]="showDrawer" (click)="closeDrawer()"></div>
+
+<div class="dr" [class.on]="showDrawer" role="dialog" aria-label="Instructor details">
+  <div *ngIf="selectedInstructor">
+    <div class="ch">
+      <h2>Instructor details</h2>
+      <button class="ib" (click)="closeDrawer()" aria-label="Close">
+        <svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="who" style="margin-bottom: 16px;">
+      <span class="av" style="width: 56px; height: 56px; font-size: 22px;">
+        {{ selectedInstructor.fullName.charAt(0).toUpperCase() }}
+      </span>
+      <div>
+        <b style="font-size: 18px;">{{ selectedInstructor.fullName }}</b>
+        <span 
+          class="pill"
+          [ngClass]="{
+            'ok': selectedInstructor.verificationStatus === 'Verified',
+            'wait': selectedInstructor.verificationStatus === 'Pending',
+            'sus': selectedInstructor.verificationStatus === 'Rejected'
+          }"
+        >
+          {{ selectedInstructor.verificationStatus }}
+        </span>
+      </div>
+    </div>
+
+    <!-- License ID Card Box -->
+    <div class="idc" [style.cursor]="selectedInstructor.licensePhotoUrl ? 'pointer' : 'default'" (click)="selectedInstructor.licensePhotoUrl && openPhotoModal(selectedInstructor)">
+      <div *ngIf="selectedInstructor.licensePhotoUrl">
+        <svg class="i" style="width: 32px; height: 32px; margin-bottom: 8px;" viewBox="0 0 24 24">
+          <rect x="2" y="5" width="20" height="14" rx="3"/>
+          <circle cx="8.5" cy="11" r="2"/>
+          <path d="M13 10h5M13 14h4"/>
+        </svg>
+        <br>
+        <b>License ID uploaded</b>
+        <br>
+        <small class="mut">Click to preview license document</small>
+      </div>
+
+      <div *ngIf="!selectedInstructor.licensePhotoUrl">
+        <svg class="i" style="width: 32px; height: 32px; margin-bottom: 8px;" viewBox="0 0 24 24">
+          <path d="M12 3 2 20h20zM12 10v4M12 17h.01"/>
+        </svg>
+        <br>
+        <b>No license ID yet</b>
+        <br>
+        <small class="mut">This instructor cannot be fully verified</small>
+      </div>
+    </div>
+
+    <!-- Key-Value Details -->
+    <div class="kv">
+      <span>Phone</span>
+      <b>{{ selectedInstructor.phoneNumber }}</b>
+
+      <span>Joined</span>
+      <b>{{ selectedInstructor.createdAt | date:'d MMM y' }}</b>
+
+      <span>Rate</span>
+      <b>{{ selectedInstructor.hourlyPrice }} ETB / lesson</b>
+    </div>
+
+    <!-- Actions -->
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px;">
+      <ng-container *ngIf="selectedInstructor.verificationStatus === 'Pending'">
+        <button class="btn ok" (click)="verifyInstructor(selectedInstructor.id, true)">
+          <svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+          Approve
+        </button>
+        <button class="btn bad" (click)="openRejectModal(selectedInstructor)">
+          Reject
+        </button>
+      </ng-container>
+
+      <ng-container *ngIf="selectedInstructor.verificationStatus === 'Verified'">
+        <button class="btn bad" (click)="openRejectModal(selectedInstructor)">
+          Suspend
+        </button>
+      </ng-container>
+
+      <ng-container *ngIf="selectedInstructor.verificationStatus === 'Rejected'">
+        <button class="btn ok" (click)="verifyInstructor(selectedInstructor.id, true)">
+          <svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+          Reactivate
+        </button>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<!-- ─── REJECT MODAL ─── -->
+<div class="ov" [class.on]="showRejectModal" (click)="closeRejectModal()" style="z-index: 1200;"></div>
+<div class="modal-card" *ngIf="showRejectModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1201; width: min(460px, 92vw);">
+  <div class="ch" style="margin-bottom: 12px;">
+    <h2>Reject Instructor</h2>
+    <button class="ib" (click)="closeRejectModal()">
+      <svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <p style="color: var(--mut); font-size: 14px; margin-bottom: 14px;">
+    Provide a reason for rejecting <b>{{ rejectInstructorName }}</b>:
+  </p>
+  <textarea 
+    [(ngModel)]="rejectReason" 
+    rows="3" 
+    class="modal-input" 
+    style="width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--bg); color: var(--text); font: inherit; outline: none;"
+    placeholder="e.g. Missing valid license documentation"
+  ></textarea>
+  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+    <button class="btn o" (click)="closeRejectModal()">Cancel</button>
+    <button class="btn bad" [disabled]="isRejecting" (click)="confirmReject()">
+      {{ isRejecting ? 'Rejecting…' : 'Confirm Rejection' }}
+    </button>
+  </div>
+</div>
+
+<!-- ─── PHOTO MODAL ─── -->
+<div class="ov" [class.on]="showPhotoModal" (click)="closePhotoModal()" style="z-index: 1200;"></div>
+<div class="modal-card" *ngIf="showPhotoModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1201; width: min(640px, 94vw); text-align: center;">
+  <div class="ch" style="margin-bottom: 12px;">
+    <h2>{{ viewPhotoInstructorName }} – License Photo</h2>
+    <button class="ib" (click)="closePhotoModal()">
+      <svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div style="background: #000; border-radius: 16px; overflow: hidden; max-height: 65vh; display: grid; place-items: center; padding: 8px;">
+    <img *ngIf="viewPhotoUrl" [src]="viewPhotoUrl" alt="License ID" style="max-width: 100%; max-height: 60vh; object-fit: contain; border-radius: 8px;" />
+    <div *ngIf="!viewPhotoUrl" style="color: #fff; padding: 40px;">No photo available</div>
+  </div>
+  <div style="text-align: right; margin-top: 16px;">
+    <button class="btn o" (click)="closePhotoModal()">Close</button>
+  </div>
+</div>
+
+<!-- ─── TOAST NOTIFICATION ─── -->
+<div class="toast" [class.on]="showToast" role="status">
+  {{ toastMessage }}
+</div>

@@ -1,0 +1,521 @@
+<div class="container arch-container">
+  
+  <!-- Hero Section -->
+  <div class="arch-header glass-panel">
+    <div class="header-badge-row">
+      <span class="badge badge-tech"><i class="bi bi-cpu-fill"></i> Engineering Architecture</span>
+      <span class="badge badge-verified"><i class="bi bi-patch-check-fill"></i> PDF Modules 8 - 11</span>
+    </div>
+    <h1>DriveAddis Architecture & Technology Explorer</h1>
+    <p class="arch-subtitle">
+      Explore the modern engineering foundation of DriveAddis. Test live demonstrations of Angular Signals, 
+      NgRx SignalStore state management, Defensive RxJS (<code style="color: var(--cyan);">exhaustMap</code>), 
+      Optimistic UI with rollback, JWT refresh rotation, and full-stack security defenses.
+    </p>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="arch-nav-tabs">
+    <button class="arch-tab-btn" [class.active]="activeTab === 'module8'" (click)="activeTab = 'module8'">
+      <i class="bi bi-lightning-charge-fill"></i>
+      <span>Module 8: Signals & Forms</span>
+    </button>
+    <button class="arch-tab-btn" [class.active]="activeTab === 'module9'" (click)="activeTab = 'module9'">
+      <i class="bi bi-diagram-3-fill"></i>
+      <span>Module 9: State & Defer</span>
+    </button>
+    <button class="arch-tab-btn" [class.active]="activeTab === 'module10'" (click)="activeTab = 'module10'">
+      <i class="bi bi-arrow-left-right"></i>
+      <span>Module 10: Full-Stack & Interceptors</span>
+    </button>
+    <button class="arch-tab-btn" [class.active]="activeTab === 'module11'" (click)="activeTab = 'module11'">
+      <i class="bi bi-shield-lock-fill"></i>
+      <span>Module 11: Security & JWT</span>
+    </button>
+    <button class="arch-tab-btn" [class.active]="activeTab === 'checklist'" (click)="activeTab = 'checklist'">
+      <i class="bi bi-check2-all"></i>
+      <span>Security Checklist</span>
+    </button>
+  </div>
+
+  <!-- ==================== TAB 1: MODULE 8 ==================== -->
+  <div *ngIf="activeTab === 'module8'" class="tab-content">
+    
+    <div class="concept-cards-grid">
+      
+      <!-- Live Signals Demo Card -->
+      <div class="glass-card demo-card">
+        <div class="card-title-row">
+          <div class="icon-circle" style="background: rgba(59, 130, 246, 0.15); color: var(--primary);">
+            <i class="bi bi-activity"></i>
+          </div>
+          <div>
+            <h3>Reactive Signals & Computed Values</h3>
+            <span class="subtext">Auto-tracking reactive state without manual change detection</span>
+          </div>
+        </div>
+
+        <div class="demo-body">
+          <p class="desc-text">
+            Writable signals (<code style="color: var(--primary);">signal()</code>) trigger instant updates in derived computed signals (<code style="color: var(--accent);">computed()</code>).
+          </p>
+
+          <div class="interactive-sandbox">
+            <div class="control-row">
+              <label>Hourly Rate (ETB):</label>
+              <div class="btn-group-chips">
+                <button class="chip-btn" [class.active]="lessonPriceSignal() === 250" (click)="setRate(250)">250 ETB</button>
+                <button class="chip-btn" [class.active]="lessonPriceSignal() === 350" (click)="setRate(350)">350 ETB</button>
+                <button class="chip-btn" [class.active]="lessonPriceSignal() === 500" (click)="setRate(500)">500 ETB</button>
+              </div>
+            </div>
+
+            <div class="control-row">
+              <label>Lesson Duration (Hours):</label>
+              <div class="stepper-box">
+                <button class="btn btn-outline btn-sm" (click)="decrementHours()"><i class="bi bi-dash"></i></button>
+                <span class="stepper-val">{{ lessonHoursSignal() }} hrs</span>
+                <button class="btn btn-outline btn-sm" (click)="incrementHours()"><i class="bi bi-plus"></i></button>
+              </div>
+            </div>
+
+            <div class="calculation-result-box">
+              <div class="calc-row">
+                <span>Subtotal (Price × Hours):</span>
+                <strong>{{ subtotalSignal() }} ETB</strong>
+              </div>
+              <div class="calc-row">
+                <span>Student Discount ({{ discountRateSignal() }}%):</span>
+                <span style="color: var(--accent);">-{{ discountAmountSignal() }} ETB</span>
+              </div>
+              <div class="calc-divider"></div>
+              <div class="calc-row total-row">
+                <span>Final Price (Computed Signal):</span>
+                <span class="highlight-total">{{ finalTotalSignal() }} ETB</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reactive Forms with getRawValue() Demo -->
+      <div class="glass-card demo-card">
+        <div class="card-title-row">
+          <div class="icon-circle" style="background: rgba(16, 185, 129, 0.15); color: var(--accent);">
+            <i class="bi bi-ui-checks"></i>
+          </div>
+          <div>
+            <h3>Reactive Forms & getRawValue()</h3>
+            <span class="subtext">Programmatic validation & full form state serialization</span>
+          </div>
+        </div>
+
+        <div class="demo-body">
+          <form [formGroup]="instructorForm" class="demo-form">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" class="form-control" formControlName="fullName" />
+              <small *ngIf="instructorForm.get('fullName')?.invalid" class="form-hint-error">
+                Minimum 3 characters required.
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Ethiopian Phone Number</label>
+              <input type="text" class="form-control" formControlName="phoneNumber" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                Official RTA License (Disabled Field):
+                <span class="badge badge-verified" style="font-size: 0.65rem;">Read-only</span>
+              </label>
+              <input type="text" class="form-control" formControlName="licenseNumber" />
+            </div>
+          </form>
+
+          <div class="json-inspector">
+            <div class="inspector-header">
+              <i class="bi bi-code-square"></i>
+              <span>form.getRawValue() Output (Includes Disabled Fields):</span>
+            </div>
+            <pre class="json-code"><code>{{ formRawValueJson }}</code></pre>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ==================== TAB 2: MODULE 9 ==================== -->
+  <div *ngIf="activeTab === 'module9'" class="tab-content">
+    <div class="concept-cards-grid">
+      
+      <!-- Defensive RxJS Demo -->
+      <div class="glass-card demo-card">
+        <div class="card-title-row">
+          <div class="icon-circle" style="background: rgba(244, 63, 94, 0.15); color: var(--rose);">
+            <i class="bi bi-shield-shaded"></i>
+          </div>
+          <div>
+            <h3>Defensive RxJS (exhaustMap)</h3>
+            <span class="subtext">Rage-click & duplicate booking submission protection</span>
+          </div>
+        </div>
+
+        <div class="demo-body">
+          <p class="desc-text">
+            While a booking request is in flight (1.2s delay), <code style="color: var(--primary);">exhaustMap</code> completely ignores subsequent clicks, protecting backend endpoints from overload.
+          </p>
+
+          <div class="interactive-sandbox">
+            <div class="rage-click-tester">
+              <button 
+                class="btn btn-primary btn-lg rage-button" 
+                (click)="triggerRapidClick()"
+              >
+                <i class="bi bi-cursor-fill"></i>
+                <span>Click Rapidly to Test!</span>
+              </button>
+
+              <button class="btn btn-outline btn-sm" (click)="resetClickTester()">
+                <i class="bi bi-arrow-clockwise"></i> Reset
+              </button>
+            </div>
+
+            <div class="metrics-row-pill">
+              <div class="metric-mini">
+                <span class="num">{{ rapidClicksSent }}</span>
+                <span class="lbl">Total Clicks</span>
+              </div>
+              <div class="metric-mini" style="color: var(--accent);">
+                <span class="num">{{ requestsProcessed }}</span>
+                <span class="lbl">Processed (200 OK)</span>
+              </div>
+              <div class="metric-mini" style="color: var(--rose);">
+                <span class="num">{{ requestsIgnored }}</span>
+                <span class="lbl">Ignored by exhaustMap</span>
+              </div>
+            </div>
+
+            <div class="status-indicator-box">
+              <span *ngIf="isProcessingRequest" class="badge badge-pending">
+                <i class="bi bi-hourglass-split"></i> Request in Progress — New Clicks Dropped
+              </span>
+              <span *ngIf="!isProcessingRequest" class="badge badge-completed">
+                <i class="bi bi-check2-circle"></i> Idle — Ready for Next Action
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- @defer Blocks & Lazy Loading Showcase -->
+      <div class="glass-card demo-card">
+        <div class="card-title-row">
+          <div class="icon-circle" style="background: rgba(99, 102, 241, 0.15); color: var(--indigo);">
+            <i class="bi bi-box-seam"></i>
+          </div>
+          <div>
+            <h3>&#64;defer Blocks & Heavy Chunk Splitting</h3>
+            <span class="subtext">On-demand component loading with placeholder & loading triggers</span>
+          </div>
+        </div>
+
+        <div class="demo-body">
+          <p class="desc-text">
+            Angular 18 <code style="color: var(--indigo);">&#64;defer</code> splits heavy JavaScript chunks and only downloads them when triggers fire (<code style="color: var(--cyan);">viewport</code>, <code style="color: var(--cyan);">interaction</code>, <code style="color: var(--cyan);">hover</code>).
+          </p>
+
+          <div class="interactive-sandbox">
+            <button 
+              class="btn btn-accent btn-sm" 
+              (click)="showHeavyComponent = !showHeavyComponent"
+            >
+              <i class="bi bi-toggle-on"></i> Toggle Heavy Addis Route Simulation Chunk
+            </button>
+
+            <!-- Defer block demonstration -->
+            @defer (when showHeavyComponent) {
+              <div class="defer-chunk glass-panel" style="margin-top: 1rem; padding: 1.25rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; color: var(--accent);">
+                  <i class="bi bi-check-circle-fill" style="font-size: 1.5rem;"></i>
+                  <div>
+                    <strong>Chunk Loaded Successfully on Demand!</strong>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">
+                      Heavy driving telemetry, RTA examination route charts, and map layers loaded.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            } @placeholder {
+              <div class="defer-placeholder" style="margin-top: 1rem; padding: 1rem; border: 1px dashed var(--border-color); border-radius: 8px; text-align: center; color: var(--text-dim);">
+                <i class="bi bi-clock-history"></i> Placeholder content displayed instantly while chunk is deferred.
+              </div>
+            } @loading (minimum 500ms) {
+              <div class="loading-state" style="padding: 1.5rem;">
+                <div class="spinner"></div>
+                <p>Downloading deferred component chunk...</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== TAB 3: MODULE 10 ==================== -->
+  <div *ngIf="activeTab === 'module10'" class="tab-content">
+    <div class="concept-cards-grid">
+      
+      <!-- Optimistic UI with Rollback Demo -->
+      <div class="glass-card demo-card">
+        <div class="card-title-row">
+          <div class="icon-circle" style="background: rgba(16, 185, 129, 0.15); color: var(--accent);">
+            <i class="bi bi-arrow-repeat"></i>
+          </div>
+          <div>
+            <h3>Optimistic UI with Snapshot Rollback</h3>
+            <span class="subtext">Instant feedback with automatic reversion on network error</span>
+          </div>
+        </div>
+
+        <div class="demo-body">
+          <p class="desc-text">
+            UI updates instantly before server confirms. If the server throws a 500/403 error, state rolls back to snapshot seamlessly.
+          </p>
+
+          <div class="interactive-sandbox">
+            <div class="counter-display">
+              <span class="counter-num">{{ optimisticCounter() }}</span>
+              <span class="counter-lbl">Live State Value</span>
+            </div>
+
+            <div class="btn-actions-row">
+              <button 
+                class="btn btn-primary btn-sm" 
+                (click)="triggerOptimisticAction(false)" 
+                [disabled]="isOptimisticLoading()"
+              >
+                <i class="bi bi-check-circle"></i> Test Success (200 OK)
+              </button>
+              <button 
+                class="btn btn-danger btn-sm" 
+                (click)="triggerOptimisticAction(true)" 
+                [disabled]="isOptimisticLoading()"
+              >
+                <i class="bi bi-x-octagon"></i> Test Failure & Rollback (500 Error)
+              </button>
+            </div>
+
+            <div class="log-terminal">
+              <div class="log-title"><i class="bi bi-terminal"></i> State History & Rollback Log:</div>
+              <div class="log-lines">
+                <div *ngFor="let line of optimisticHistory()" class="log-line">
+                  {{ line }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full-Stack Interceptors Pipeline -->
+      <div class="glass-card demo-card">
+        <div class="card-title-row">
+          <div class="icon-circle" style="background: rgba(6, 182, 212, 0.15); color: var(--cyan);">
+            <i class="bi bi-layers-fill"></i>
+          </div>
+          <div>
+            <h3>HTTP Interceptors Pipeline</h3>
+            <span class="subtext">Sequential request/response processing pipeline</span>
+          </div>
+        </div>
+
+        <div class="demo-body">
+          <div class="pipeline-flow">
+            <div class="pipeline-step">
+              <div class="step-badge">1</div>
+              <div class="step-content">
+                <strong>JWT & Auth Injection</strong>
+                <p>Appends <code style="color: var(--cyan);">Authorization: Bearer &lt;token&gt;</code></p>
+              </div>
+            </div>
+
+            <div class="pipeline-step">
+              <div class="step-badge">2</div>
+              <div class="step-content">
+                <strong>XSRF Double-Submit Protection</strong>
+                <p>Reads <code style="color: var(--amber);">XSRF-TOKEN</code> cookie & injects header</p>
+              </div>
+            </div>
+
+            <div class="pipeline-step">
+              <div class="step-badge">3</div>
+              <div class="step-content">
+                <strong>Rate Limit & 429 Guard</strong>
+                <p>Detects <code style="color: var(--rose);">429 Too Many Requests</code> with <code style="color: var(--rose);">Retry-After</code></p>
+              </div>
+            </div>
+
+            <div class="pipeline-step">
+              <div class="step-badge">4</div>
+              <div class="step-content">
+                <strong>Global Error & Toast Dispatcher</strong>
+                <p>Catches 401/403/500 and triggers UI alerts</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== TAB 4: MODULE 11 ==================== -->
+  <div *ngIf="activeTab === 'module11'" class="tab-content">
+    <div class="concept-cards-grid">
+      
+      <!-- JWT & Refresh Token Rotation -->
+      <div class="glass-card demo-card">
+        <div class="card-title-row">
+          <div class="icon-circle" style="background: rgba(245, 158, 11, 0.15); color: var(--amber);">
+            <i class="bi bi-key-fill"></i>
+          </div>
+          <div>
+            <h3>JWT & Refresh Token Rotation</h3>
+            <span class="subtext">Stateless tokens + single-use refresh token theft detection</span>
+          </div>
+        </div>
+
+        <div class="demo-body">
+          <div class="token-claims-box">
+            <div class="token-badge-title">Decoded JWT Token Claims (HMAC-SHA256):</div>
+            <div class="claims-grid">
+              <div class="claim-item">
+                <span class="claim-key">Subject (sub):</span>
+                <code>{{ decodedJwtPayload?.sub }}</code>
+              </div>
+              <div class="claim-item">
+                <span class="claim-key">User ID (nameid):</span>
+                <code>{{ decodedJwtPayload?.nameid }}</code>
+              </div>
+              <div class="claim-item">
+                <span class="claim-key">Role Claim:</span>
+                <span class="badge badge-confirmed">{{ decodedJwtPayload?.role }}</span>
+              </div>
+              <div class="claim-item">
+                <span class="claim-key">Phone:</span>
+                <code>{{ decodedJwtPayload?.mobilephone }}</code>
+              </div>
+              <div class="claim-item">
+                <span class="claim-key">Token Lifespan:</span>
+                <span class="badge badge-pending">{{ decodedJwtPayload?.exp }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="rotation-info-panel glass-panel" style="margin-top: 1rem; padding: 1rem;">
+            <strong style="color: var(--amber);"><i class="bi bi-shield-check"></i> Theft Detection Rule:</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;">
+              Refresh tokens are single-use. If an already-used refresh token is submitted, the server instantly invalidates all refresh tokens for that user ID, preventing replay attacks.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rate Limiting 429 Test Bench -->
+      <div class="glass-card demo-card">
+        <div class="card-title-row">
+          <div class="icon-circle" style="background: rgba(244, 63, 94, 0.15); color: var(--rose);">
+            <i class="bi bi-speedometer"></i>
+          </div>
+          <div>
+            <h3>Rate Limiting & 429 Protection</h3>
+            <span class="subtext">Brute force & DDoS prevention with Retry-After header</span>
+          </div>
+        </div>
+
+        <div class="demo-body">
+          <p class="desc-text">
+            Simulate sensitive endpoint protection (e.g. login attempts: 5 per minute). Exceeding the quota returns <code style="color: var(--rose);">429 Too Many Requests</code>.
+          </p>
+
+          <div class="interactive-sandbox">
+            <div class="rate-limit-visualizer">
+              <div class="rate-bar-container">
+                <div class="rate-bar" [style.width.%]="(rateLimitCount / rateLimitMax) * 100"></div>
+              </div>
+              <div class="rate-labels">
+                <span>Used: {{ rateLimitCount }} / {{ rateLimitMax }} Requests</span>
+                <span>Max: 5 req/min</span>
+              </div>
+            </div>
+
+            <div class="rate-action-row">
+              <button 
+                class="btn btn-primary btn-sm" 
+                (click)="simulateRateLimitRequest()" 
+                [disabled]="isRateLimited"
+              >
+                <i class="bi bi-send-fill"></i> Send API Request
+              </button>
+
+              <span *ngIf="isRateLimited" class="badge badge-cancelled">
+                <i class="bi bi-exclamation-octagon-fill"></i> Rate Limited! Retry in {{ rateLimitResetSeconds }}s
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== TAB 5: CHECKLIST ==================== -->
+  <div *ngIf="activeTab === 'checklist'" class="tab-content">
+    <div class="glass-card checklist-card">
+      <div class="card-title-row">
+        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.15); color: var(--accent);">
+          <i class="bi bi-check-all"></i>
+        </div>
+        <div>
+          <h3>Full-Stack Security & Architecture Checklist</h3>
+          <span class="subtext">Verified against PDF specification (Modules 8, 9, 10, 11)</span>
+        </div>
+      </div>
+
+      <div class="checklist-grid">
+        
+        <div class="checklist-category glass-panel">
+          <h4><i class="bi bi-browser-chrome"></i> Frontend (Angular) Best Practices</h4>
+          <ul class="check-items">
+            <li><i class="bi bi-check-circle-fill check-icon"></i> Standalone components for all new code</li>
+            <li><i class="bi bi-check-circle-fill check-icon"></i> Signals for reactive state (no manual change detection)</li>
+            <li><i class="bi bi-check-circle-fill check-icon"></i> Centralized SignalStore single-source-of-truth</li>
+            <li><i class="bi bi-check-circle-fill check-icon"></i> &#64;defer blocks for heavy component chunk splitting</li>
+            <li><i class="bi bi-check-circle-fill check-icon"></i> Interceptors for authentication, XSRF & error handling</li>
+            <li><i class="bi bi-check-circle-fill check-icon"></i> Route & Role Guards for protected routes</li>
+          </ul>
+        </div>
+
+        <div class="checklist-category glass-panel">
+          <h4><i class="bi bi-hdd-network-fill"></i> Backend (.NET) Best Practices</h4>
+          <ul class="check-items">
+            <li><i class="bi bi-check-circle-fill check-icon"></i> BCrypt unique salted password hashing</li>
+            <li><i class="bi bi-check-circle-fill check-icon"></i> ASP.NET Core Identity with lockout protection</li>
+            <li><i class="bi bi-check-circle-fill check-icon"></i> JWT short-lived authentication (15m)</li>
+            <li><i class="bi bi-check-circle-fill check-icon"></i> Single-use refresh token rotation & theft detection</li>
+            <li><i class="bi bi-check-circle-fill check-icon"></i> Resource-based authorization policies</li>
+            <li><i class="bi bi-check-circle-fill check-icon"></i> CORS policies & Security headers</li>
+            <li><i class="bi bi-check-circle-fill check-icon"></i> Endpoint rate limiting (429 Retry-After)</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>

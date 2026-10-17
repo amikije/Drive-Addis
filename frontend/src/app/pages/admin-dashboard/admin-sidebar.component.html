@@ -1,0 +1,14 @@
+<nav class="admin-sidebar glass">
+  <div class="sidebar-header">
+    <h2 class="sidebar-title text-gradient-brand">DriveAddis</h2>
+    <button class="theme-toggle-btn" (click)="toggleTheme()">
+      <i class="bi" [ngClass]="{'bi-moon': themeService.isDark(), 'bi-sun': !themeService.isDark()}"></i>
+    </button>
+  </div>
+  <ul class="sidebar-nav">
+    <li><a (click)="tabChange.emit('instructors')" [class.active]="activeTab === 'instructors'"><i class="bi bi-person-badge"></i> Instructors</a></li>
+    <li><a (click)="tabChange.emit('bookings')" [class.active]="activeTab === 'bookings'"><i class="bi bi-calendar3"></i> Bookings</a></li>
+    <li><a (click)="tabChange.emit('settings')" [class.active]="activeTab === 'settings'"><i class="bi bi-gear"></i> Settings</a></li>
+    <li><a (click)="authService.logout()"><i class="bi bi-box-arrow-right"></i> Log out</a></li>
+  </ul>
+</nav>

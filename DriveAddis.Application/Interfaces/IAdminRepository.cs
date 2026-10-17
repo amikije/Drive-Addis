@@ -6,4 +6,5 @@ public interface IAdminRepository
 {
     Task<AdminDashboardDto> GetDashboardStatsAsync(CancellationToken ct);
     Task<List<InstructorAdminListItemDto>> GetInstructorsAsync(bool? unverifiedOnly, string? search, CancellationToken ct);
+    Task<List<StudentAdminListItemDto>> GetStudentsAsync(string? search, CancellationToken ct);
 }

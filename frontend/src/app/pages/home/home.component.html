@@ -1,0 +1,280 @@
+<!-- HOME PAGE — DriveAddis Premium Redesign -->
+<div class="home-page">
+
+  <!-- ─── HERO ─── -->
+  <section class="hero-section glass-panel fade-up">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+
+    <div class="container hero-container">
+      <div class="hero-content fade-up">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          🚘 Addis Ababa's #1 Driving School Network
+        </div>
+        <h1 class="hero-title">
+          Master the road with<br>
+          <span class="text-gradient-emerald">Confidence</span>
+        </h1>
+        <p class="hero-subtitle">
+          Join thousands of successful drivers. Find patient, RTA-certified instructors, practice on well-maintained vehicles, and get your Ethiopian driving license faster.
+        </p>
+        <div class="hero-actions">
+          <a routerLink="/register" class="btn btn-primary btn-xl" *ngIf="!authService.isLoggedIn()">
+            <i class="bi bi-person-plus-fill"></i> Start Learning Today
+          </a>
+          <a routerLink="/login" class="btn btn-ghost btn-xl" *ngIf="!authService.isLoggedIn()">
+            <i class="bi bi-box-arrow-in-right"></i> Sign In
+          </a>
+          <a [routerLink]="authService.isStudent() ? '/student' : '/instructor'" class="btn btn-primary btn-xl" *ngIf="authService.isLoggedIn()">
+            <i class="bi bi-speedometer2"></i> Go to Dashboard
+          </a>
+        </div>
+        <div class="hero-trust">
+          <div class="trust-item"><i class="bi bi-shield-check-fill"></i> RTA Certified</div>
+          <div class="trust-divider"></div>
+          <div class="trust-item"><i class="bi bi-car-front-fill"></i> Safe Vehicles</div>
+          <div class="trust-divider"></div>
+          <div class="trust-item"><i class="bi bi-calendar-check-fill"></i> Flexible Hours</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SEARCH & FILTER BAR ─── -->
+  <section class="search-section">
+    <div class="container">
+      <div class="search-card">
+        <div class="search-bar-row">
+          <div class="input-with-icon search-input-wrap">
+            <i class="bi bi-search input-icon"></i>
+            <input
+              type="text"
+              class="form-control search-input"
+              placeholder="Search by instructor name…"
+              [(ngModel)]="searchName"
+              (keyup.enter)="applyFilters()"
+            />
+          </div>
+          <select class="form-control search-select" [(ngModel)]="selectedVehicleType" (change)="applyFilters()">
+            <option value="">All Vehicles</option>
+            <option value="Manual">Manual Transmission</option>
+            <option value="Automatic">Automatic Transmission</option>
+          </select>
+          <select class="form-control search-select" [(ngModel)]="selectedLocation" (change)="applyFilters()">
+            <option value="">All Locations</option>
+            <option *ngFor="let loc of locationPresets.slice(1)" [value]="loc.name">{{ loc.name }}</option>
+          </select>
+          <select class="form-control search-select" [(ngModel)]="maxPrice" (change)="applyFilters()">
+            <option [ngValue]="null">Any Price</option>
+            <option [ngValue]="200">Under 200 ETB</option>
+            <option [ngValue]="400">Under 400 ETB</option>
+            <option [ngValue]="600">Under 600 ETB</option>
+          </select>
+          <button class="btn btn-primary search-btn" (click)="applyFilters()">
+            <i class="bi bi-funnel-fill"></i> Search
+          </button>
+          <button *ngIf="searchName || selectedVehicleType || selectedLocation || maxPrice" class="btn btn-ghost search-btn" (click)="resetFilters()" title="Clear filters">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <!-- Quick location pills -->
+        <div class="quick-filters">
+          <span class="quick-filters-label">Quick:</span>
+          <button
+            *ngFor="let loc of locationPresets"
+            class="filter-pill"
+            [class.active]="selectedLocation === loc.name || (loc.lat === 0 && !selectedLocation)"
+            (click)="quickFilterLocation(loc.name)"
+          >{{ loc.name === 'All Addis Ababa' ? '🗺 All' : loc.name.split('/')[0].trim() }}</button>
+
+          <div class="quick-filter-separator"></div>
+          <button
+            class="filter-pill"
+            [class.active]="selectedVehicleType === 'Manual'"
+            (click)="quickFilterTransmission('Manual')"
+          >⚙️ Manual</button>
+          <button
+            class="filter-pill"
+            [class.active]="selectedVehicleType === 'Automatic'"
+            (click)="quickFilterTransmission('Automatic')"
+          >🤖 Automatic</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── INSTRUCTORS GRID ─── -->
+  <section class="instructors-section">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Available Instructors</h2>
+          <p class="section-subtitle">{{ stateStore.instructors().length }} certified instructors near you</p>
+        </div>
+        <div class="results-count" *ngIf="!stateStore.loadingInstructors()">
+          <span>{{ stateStore.instructors().length }} results</span>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="stateStore.loadingInstructors()">
+        <div class="spinner spinner-lg"></div>
+        <p>Finding instructors near you…</p>
+      </div>
+
+      <!-- Instructors Grid -->
+      <div class="instructor-grid" *ngIf="!stateStore.loadingInstructors()">
+        <div
+          class="instructor-card glass-panel fade-up"
+          *ngFor="let instructor of stateStore.instructors()"
+          (click)="openBookingModal(instructor)"
+          role="button"
+          tabindex="0"
+        >
+          <div class="instructor-card-top">
+            <div class="instructor-avatar">{{ instructor.fullName.charAt(0).toUpperCase() }}</div>
+            <div class="instructor-card-meta">
+              <div class="instructor-name">{{ instructor.fullName }}</div>
+              <div class="instructor-location">
+                <i class="bi bi-geo-alt-fill"></i>
+                Addis Ababa
+              </div>
+            </div>
+          </div>
+
+          <div class="instructor-card-body">
+            <div class="instructor-badges">
+              <span class="badge badge-neutral" *ngFor="let vtype of instructor.vehicleTypes">
+                <i class="bi" [ngClass]="vtype === 'Automatic' ? 'bi-gear-wide-connected' : 'bi-gear'"></i>
+                {{ vtype }}
+              </span>
+            </div>
+
+            <div class="instructor-card-footer">
+              <div>
+                <div class="instructor-price">
+                  {{ instructor.hourlyPrice | number }}<span> ETB/hr</span>
+                </div>
+                <div class="rating-stars" *ngIf="instructor.averageRating">
+                  <i class="bi bi-star-fill" *ngFor="let s of [1,2,3,4,5]; let i = index"
+                    [class.dim]="i >= instructor.averageRating"></i>
+                  <span class="rating-num">{{ instructor.averageRating.toFixed(1) }}</span>
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm book-btn" (click)="openBookingModal(instructor); $event.stopPropagation()">
+                Book Now
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!stateStore.loadingInstructors() && stateStore.instructors().length === 0">
+        <div class="empty-state-icon"><i class="bi bi-person-x"></i></div>
+        <h4>No instructors found</h4>
+        <p>Try adjusting your filters or expanding your search area to find available instructors.</p>
+        <button class="btn btn-primary" (click)="resetFilters()">Clear All Filters</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FEATURES STRIP ─── -->
+  <section class="features-section">
+    <div class="container">
+      <div class="features-header">
+        <h2 class="section-title" style="font-size: 2rem; letter-spacing: -0.04em;">Why choose DriveAddis?</h2>
+        <p class="section-subtitle">Everything you need to get your Ethiopian driving license.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon violet"><i class="bi bi-patch-check-fill"></i></div>
+          <h3>Verified Instructors</h3>
+          <p>Every instructor is background-checked and certified by the Road Transport Authority (RTA).</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon cyan"><i class="bi bi-calendar2-check-fill"></i></div>
+          <h3>Instant Booking</h3>
+          <p>Book lessons in under 60 seconds. Flexible scheduling around your availability.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon emerald"><i class="bi bi-geo-alt-fill"></i></div>
+          <h3>Location-Based</h3>
+          <p>Find instructors in your exact neighborhood — Bole, Kazanchis, Piassa and more.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon amber"><i class="bi bi-star-fill"></i></div>
+          <h3>Verified Reviews</h3>
+          <p>Read honest reviews from real students. Only students who completed lessons can leave feedback.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ─── BOOKING MODAL ─── -->
+<div class="modal-backdrop" *ngIf="showBookingModal" (click)="closeBookingModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h3>Book a Lesson</h3>
+        <p style="font-size:0.85rem; color: var(--text-secondary); margin-top: 4px;">
+          with {{ selectedInstructor?.fullName }}
+        </p>
+      </div>
+      <button class="modal-close-btn" (click)="closeBookingModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+
+    <div class="modal-body" *ngIf="!bookingSuccess">
+      <div class="alert alert-danger" *ngIf="bookingError">
+        <i class="bi bi-exclamation-circle-fill"></i> {{ bookingError }}
+      </div>
+
+      <div class="booking-instructor-preview" *ngIf="selectedInstructor">
+        <div class="instructor-avatar" style="width:44px;height:44px;font-size:1rem;">
+          {{ selectedInstructor.fullName.charAt(0) }}
+        </div>
+        <div>
+          <div style="font-weight:700; font-size:0.95rem;">{{ selectedInstructor.fullName }}</div>
+          <div style="font-size:0.8rem; color:var(--text-secondary);">{{ selectedInstructor.hourlyPrice | number }} ETB/hr</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input type="date" class="form-control" [(ngModel)]="bookingDate" [min]="minDate" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Time Slot</label>
+        <select class="form-control" [(ngModel)]="bookingTime">
+          <option value="" disabled>— Select a time slot —</option>
+          <option *ngFor="let slot of availableTimeSlots" [value]="slot.value">
+            {{ slot.label }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-body booking-success-body" *ngIf="bookingSuccess">
+      <div class="booking-success">
+        <div class="success-icon"><i class="bi bi-check-circle-fill"></i></div>
+        <h4>Booking Confirmed!</h4>
+        <p>Your lesson with {{ selectedInstructor?.fullName }} has been requested. You'll receive confirmation shortly.</p>
+        <button class="btn btn-primary" (click)="closeBookingModal()">Done</button>
+      </div>
+    </div>
+
+    <div class="modal-footer" *ngIf="!bookingSuccess">
+      <button class="btn btn-ghost" (click)="closeBookingModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="submitBookingDefensive()" [disabled]="isBooking">
+        <span class="spinner" *ngIf="isBooking"></span>
+        <i class="bi bi-calendar2-check-fill" *ngIf="!isBooking"></i>
+        {{ isBooking ? 'Booking…' : 'Confirm Booking' }}
+      </button>
+    </div>
+  </div>
+</div>

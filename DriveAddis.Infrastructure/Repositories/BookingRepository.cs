@@ -31,6 +31,7 @@ public class BookingRepository : IBookingRepository
     {
         await _context.SaveChangesAsync(ct);
     }
+
     public async Task<List<Booking>> GetBookingsAsync(int? studentId, int? instructorId, CancellationToken ct)
     {
         var query = _context.Bookings
@@ -48,18 +49,31 @@ public class BookingRepository : IBookingRepository
             .OrderByDescending(b => b.ScheduledAt)
             .ToListAsync(ct);
     }
-    public async Task<bool> HasConflictingBookingAsync(int instructorId, DateTime scheduledAt, CancellationToken ct)
+
+    public async Task<bool> HasConflictingBookingAsync(
+        int instructorId,
+        DateTime scheduledAt,
+        int lessonDurationMinutes,
+        CancellationToken ct)
     {
-        var lessonDuration = TimeSpan.FromHours(1);
+        // Use AddMinutes instead of TimeSpan arithmetic — Npgsql translates this correctly to SQL
         var newStart = scheduledAt;
-        var newEnd = scheduledAt.Add(lessonDuration);
+        var newEnd = scheduledAt.AddMinutes(lessonDurationMinutes);
 
         return await _context.Bookings
             .Where(b => b.InstructorId == instructorId)
             .Where(b => b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed)
             .AnyAsync(b =>
-                newStart < b.ScheduledAt.Add(lessonDuration) &&
+                newStart < b.ScheduledAt.AddMinutes(lessonDurationMinutes) &&
                 b.ScheduledAt < newEnd,
                 ct);
+    }
+
+    public async Task<int> CountActiveBookingsForStudentAsync(int studentId, CancellationToken ct)
+    {
+        return await _context.Bookings
+            .Where(b => b.StudentId == studentId)
+            .Where(b => b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed)
+            .CountAsync(ct);
     }
 }

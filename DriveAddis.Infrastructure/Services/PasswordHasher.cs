@@ -1,20 +1,18 @@
 using DriveAddis.Application.Interfaces;
-using Microsoft.AspNetCore.Identity;
+using BCrypt.Net;
 
 namespace DriveAddis.Infrastructure.Services;
 
 public class PasswordHasher : IPasswordHasher
 {
-    private readonly PasswordHasher<object> _hasher = new();
-
     public string Hash(string password)
     {
-        return _hasher.HashPassword(new object(), password);
+        // Work factor 11 is a good balance for security and performance
+        return BCrypt.Net.BCrypt.HashPassword(password, workFactor: 11);
     }
 
     public bool Verify(string password, string hash)
     {
-        var result = _hasher.VerifyHashedPassword(new object(), hash, password);
-        return result == PasswordVerificationResult.Success;
+        return BCrypt.Net.BCrypt.Verify(password, hash);
     }
 }

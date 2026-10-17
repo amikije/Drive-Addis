@@ -21,16 +21,20 @@ public class BookingsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateBookingCommand command, CancellationToken ct)
+    public async Task<IActionResult> Create([FromBody] CreateBookingRequest request, CancellationToken ct)
     {
+        // Extract studentId from JWT claims (set by JwtTokenGenerator)
         var studentIdClaim = User.FindFirst("studentId")?.Value;
 
-        if (studentIdClaim is null)
-            return Forbid(); // logged in, but not as a student — instructors/admins can't book
+        if (string.IsNullOrEmpty(studentIdClaim) || !int.TryParse(studentIdClaim, out var studentId))
+            return StatusCode(403, new { error = "Only students can book lessons. Please log in as a student." });
 
-        var fullCommand = command with { StudentId = int.Parse(studentIdClaim) };
+        var command = new CreateBookingCommand(request.InstructorId, request.ScheduledAt)
+        {
+            StudentId = studentId
+        };
 
-        var result = await _mediator.Send(fullCommand, ct);
+        var result = await _mediator.Send(command, ct);
 
         return result.IsSuccess
             ? Ok(result.Value)
@@ -57,10 +61,35 @@ public class BookingsController : ControllerBase
         [FromQuery] int? instructorId,
         CancellationToken ct)
     {
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+        // Security / Data Isolation: Prevent students from seeing other students' bookings
+        if (role == "Student")
+        {
+            var studentIdClaim = User.FindFirst("studentId")?.Value;
+            if (int.TryParse(studentIdClaim, out var claimStudentId))
+            {
+                studentId = claimStudentId;
+                instructorId = null; // Students cannot query by instructorId across other students
+            }
+        }
+        // Prevent instructors from seeing other instructors' bookings
+        else if (role == "Instructor")
+        {
+            var instructorIdClaim = User.FindFirst("instructorId")?.Value;
+            if (int.TryParse(instructorIdClaim, out var claimInstructorId))
+            {
+                instructorId = claimInstructorId;
+                studentId = null; // Instructors view all bookings assigned to them
+            }
+        }
+
         var query = new GetBookingsQuery(studentId, instructorId);
         var results = await _mediator.Send(query, ct);
         return Ok(results);
     }
 
+    // Request DTOs — separate from MediatR commands
+    public record CreateBookingRequest(int InstructorId, DateTime ScheduledAt);
     public record UpdateStatusRequest(BookingStatus Status);
 }

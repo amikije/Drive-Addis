@@ -1,0 +1,241 @@
+<!-- STUDENT DASHBOARD — Premium Redesign -->
+<div class="page-wrapper">
+  <div class="container-sm">
+
+    <!-- ─── DASHBOARD HEADER ─── -->
+    <div class="dash-header">
+      <div class="dash-greeting">
+        <div class="dash-avatar">{{ (currentUser?.fullName ? currentUser?.fullName?.charAt(0) : (currentUser?.phoneNumber?.charAt(3) || 'S')) | uppercase }}</div>
+        <div>
+          <h1 class="dash-title">Welcome, {{ currentUser?.fullName || 'Student' }}!</h1>
+          <p class="dash-subtitle">
+            <span *ngIf="currentUser?.phoneNumber"><i class="bi bi-phone"></i> {{ currentUser?.phoneNumber }}</span>
+            <span class="badge badge-emerald" style="margin-left: 0.5rem;">
+              <i class="bi bi-mortarboard-fill"></i> Student Portal
+            </span>
+          </p>
+        </div>
+      </div>
+      <div class="dash-header-actions">
+        <button class="btn btn-ghost btn-sm" (click)="refreshData()">
+          <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+        <button class="btn btn-primary btn-sm" routerLink="/">
+          <i class="bi bi-search"></i> Find Instructors
+        </button>
+      </div>
+    </div>
+
+    <!-- ─── STATS ROW ─── -->
+    <div class="dashboard-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 2rem;">
+      <div class="stat-card glass-panel fade-up">
+        <div class="stat-icon violet"><i class="bi bi-calendar2-check"></i></div>
+        <div class="stat-label">Total Bookings</div>
+        <div class="stat-value violet">{{ stateStore.bookings().length }}</div>
+      </div>
+      <div class="stat-card glass-panel fade-up">
+        <div class="stat-icon emerald"><i class="bi bi-check-circle"></i></div>
+        <div class="stat-label">Completed</div>
+        <div class="stat-value emerald">{{ completedCount() }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon cyan"><i class="bi bi-clock"></i></div>
+        <div class="stat-label">Upcoming</div>
+        <div class="stat-value cyan">{{ confirmedCount() }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber"><i class="bi bi-hourglass-split"></i></div>
+        <div class="stat-label">Pending</div>
+        <div class="stat-value amber">{{ pendingCount() }}</div>
+      </div>
+    </div>
+
+    <!-- ─── MY BOOKINGS ─── -->
+    <div class="dash-panel">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">My Lessons</h2>
+          <p class="section-subtitle">Your complete booking history</p>
+        </div>
+        <div class="filter-pills-row">
+          <button class="filter-pill" [class.active]="statusFilter() === 'ALL'"   (click)="setStatusFilter('ALL')">All</button>
+          <button class="filter-pill" [class.active]="statusFilter() === 'CONFIRMED'" (click)="setStatusFilter('CONFIRMED')">
+            <span class="pill-dot cyan"></span> Upcoming
+          </button>
+          <button class="filter-pill" [class.active]="statusFilter() === 'COMPLETED'" (click)="setStatusFilter('COMPLETED')">
+            <span class="pill-dot emerald"></span> Completed
+          </button>
+          <button class="filter-pill" [class.active]="statusFilter() === 'PENDING'" (click)="setStatusFilter('PENDING')">
+            <span class="pill-dot amber"></span> Pending
+          </button>
+          <button class="filter-pill" [class.active]="statusFilter() === 'CANCELLED'" (click)="setStatusFilter('CANCELLED')">
+            <span class="pill-dot rose"></span> Cancelled
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-state" *ngIf="stateStore.loadingBookings()">
+        <div class="spinner"></div>
+        <p>Loading your lessons…</p>
+      </div>
+
+      <!-- Booking Cards -->
+      <div class="bookings-list" *ngIf="!stateStore.loadingBookings()">
+        <div class="booking-row glass-panel fade-up" *ngFor="let booking of filteredBookings()">
+          <div class="booking-row-left">
+            <div class="booking-avatar">{{ booking.instructorName.charAt(0) || 'I' }}</div>
+            <div class="booking-info">
+              <div class="booking-instructor-name">{{ booking.instructorName }}</div>
+              <div class="booking-meta">
+                <span><i class="bi bi-calendar3"></i> {{ booking.scheduledAt | date:'EEE, d MMM y' }}</span>
+                <span><i class="bi bi-clock"></i> {{ booking.scheduledAt | date:'h:mm a' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="booking-row-right">
+            <span class="badge" [ngClass]="{
+              'badge-confirmed': booking.status === 'Confirmed',
+              'badge-completed': booking.status === 'Completed',
+              'badge-pending':   booking.status === 'Pending',
+              'badge-cancelled': booking.status === 'Cancelled'
+            }">{{ booking.status }}</span>
+            <div class="booking-actions">
+              <button
+                class="btn btn-ghost btn-sm"
+                *ngIf="booking.status === 'Confirmed' || booking.status === 'Pending'"
+                (click)="cancelBookingOptimistic(booking)"
+              >
+                <i class="bi bi-x-circle"></i> Cancel
+              </button>
+              <button
+                class="btn btn-success btn-sm"
+                *ngIf="booking.status === 'Completed'"
+                (click)="openReviewModal(booking)"
+              >
+                <i class="bi bi-star-fill"></i> Review
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="filteredBookings().length === 0">
+          <div class="empty-state-icon"><i class="bi bi-calendar-x"></i></div>
+          <h4>No lessons found</h4>
+          <p>You don't have any {{ statusFilter() !== 'ALL' ? statusFilter().toLowerCase() : '' }} bookings yet.</p>
+          <a routerLink="/" class="btn btn-primary">Browse Instructors</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── QUICK BOOK ─── -->
+    <div class="dash-panel" style="margin-top: 2rem;">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Book Another Lesson</h2>
+          <p class="section-subtitle">Top-rated instructors available now</p>
+        </div>
+        <a routerLink="/" class="btn btn-ghost btn-sm">View All <i class="bi bi-arrow-right"></i></a>
+      </div>
+      <div class="instructor-grid">
+        <div
+          class="instructor-card"
+          *ngFor="let instructor of stateStore.instructors().slice(0, 3)"
+          (click)="openBookingModal(instructor)"
+        >
+          <div class="instructor-card-top">
+            <div class="instructor-avatar">{{ instructor.fullName.charAt(0).toUpperCase() }}</div>
+            <div class="instructor-card-meta">
+              <div class="instructor-name">{{ instructor.fullName }}</div>
+              <div class="instructor-location"><i class="bi bi-geo-alt-fill"></i> Addis Ababa</div>
+            </div>
+          </div>
+          <div class="instructor-card-footer" style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <div class="instructor-price">{{ instructor.hourlyPrice | number }}<span> ETB/hr</span></div>
+            <button class="btn btn-primary btn-sm">Book</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── BOOKING MODAL ─── -->
+<div class="modal-backdrop" *ngIf="showBookingModal" (click)="closeBookingModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Book a Lesson</h3>
+      <button class="modal-close-btn" (click)="closeBookingModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-danger" *ngIf="bookingModalError"><i class="bi bi-exclamation-circle-fill"></i> {{ bookingModalError }}</div>
+      <div class="alert alert-success" *ngIf="bookingSuccessMsg"><i class="bi bi-check-circle-fill"></i> {{ bookingSuccessMsg }}</div>
+
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input type="date" class="form-control" [(ngModel)]="bookingDate" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Time</label>
+        <select class="form-control" [(ngModel)]="bookingTime">
+          <option value="07:00">7:00 AM</option>
+          <option value="09:00">9:00 AM</option>
+          <option value="11:00">11:00 AM</option>
+          <option value="13:00">1:00 PM</option>
+          <option value="15:00">3:00 PM</option>
+          <option value="17:00">5:00 PM</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeBookingModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="submitBooking()" [disabled]="isBooking">
+        <span class="spinner" *ngIf="isBooking"></span>
+        <i class="bi bi-calendar2-check-fill" *ngIf="!isBooking"></i>
+        {{ isBooking ? 'Booking…' : 'Confirm Booking' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── REVIEW MODAL ─── -->
+<div class="modal-backdrop" *ngIf="showReviewModal" (click)="closeReviewModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Leave a Review</h3>
+      <button class="modal-close-btn" (click)="closeReviewModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-danger"  *ngIf="reviewError"><i class="bi bi-exclamation-circle-fill"></i> {{ reviewError }}</div>
+      <div class="alert alert-success" *ngIf="reviewSuccess"><i class="bi bi-check-circle-fill"></i> Review submitted successfully!</div>
+
+      <div class="form-group">
+        <label class="form-label">Rating</label>
+        <div class="star-selector">
+          <button
+            *ngFor="let s of [1,2,3,4,5]"
+            type="button"
+            class="star-btn"
+            [class.active]="s <= reviewRating"
+            (click)="reviewRating = s"
+          ><i class="bi bi-star-fill"></i></button>
+          <span class="star-label">{{ reviewRating }}/5</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Comment (Optional)</label>
+        <textarea class="form-control" [(ngModel)]="reviewComment" rows="4" placeholder="How was your lesson?"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeReviewModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="submitReview()" [disabled]="isSubmittingReview">
+        <span class="spinner" *ngIf="isSubmittingReview"></span>
+        <i class="bi bi-send-fill" *ngIf="!isSubmittingReview"></i>
+        {{ isSubmittingReview ? 'Submitting…' : 'Submit Review' }}
+      </button>
+    </div>
+  </div>
+</div>

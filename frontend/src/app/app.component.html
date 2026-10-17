@@ -1,0 +1,265 @@
+<!-- Navigation Bar -->
+<header class="site-header" *ngIf="!isAdminRoute()">
+  <nav class="navbar glass-panel">
+    <div class="nav-container">
+      <a routerLink="/" (click)="closeMobileMenu()" class="brand">
+        <div class="brand-icon">
+          <i class="bi bi-compass-fill"></i>
+        </div>
+        <div class="brand-text">
+          <span>Drive</span><span class="brand-accent">Addis</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <div class="nav-links">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+          <i class="bi bi-house-door"></i> Home
+        </a>
+
+        <!-- Tech & Architecture Hub Link (PDF Modules 8-11 Showcase) -->
+        <a routerLink="/architecture" routerLinkActive="active" class="nav-item tech-hub-link" title="Explore Architecture Patterns, Signals, Security & State">
+          <i class="bi bi-cpu-fill"></i> Architecture Hub
+          <span class="badge badge-tech" style="font-size: 0.65rem; padding: 0.15rem 0.45rem;">PDF Modules</span>
+        </a>
+
+        <!-- Logged Out Links -->
+        <ng-container *ngIf="!currentUser">
+          <a routerLink="/login" routerLinkActive="active" class="nav-item">
+            <i class="bi bi-box-arrow-in-right"></i> Login
+          </a>
+          <a routerLink="/register" class="btn btn-primary btn-sm">
+            <i class="bi bi-person-plus-fill"></i> Get Started
+          </a>
+        </ng-container>
+
+        <!-- Logged In Links -->
+        <ng-container *ngIf="currentUser">
+          <a [routerLink]="getDashboardLink()" routerLinkActive="active" class="nav-item dashboard-link">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+
+          <!-- Role Indicator Tag -->
+          <div class="user-role-pill">
+            <span *ngIf="currentUser.role === 'Admin'" class="badge badge-cancelled">
+              <i class="bi bi-shield-lock-fill"></i> Admin
+            </span>
+            <span *ngIf="currentUser.role === 'Instructor'" class="badge badge-confirmed">
+              <i class="bi bi-car-front-fill"></i> Instructor
+            </span>
+            <span *ngIf="currentUser.role === 'Student'" class="badge badge-completed">
+              <i class="bi bi-mortarboard-fill"></i> Student
+            </span>
+            <span *ngIf="currentUser.fullName" class="user-name" style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary); margin-left: 0.25rem;">{{ currentUser.fullName }}</span>
+            <span *ngIf="currentUser.phoneNumber && !currentUser.fullName" class="user-phone">{{ currentUser.phoneNumber }}</span>
+          </div>
+
+          <!-- In-App Notification Bell -->
+          <div class="notification-bell-wrapper" (click)="$event.stopPropagation()">
+            <button 
+              type="button"
+              (click)="inAppNotificationService.toggleDropdown()" 
+              class="notification-bell-btn" 
+              [class.has-unread]="inAppNotificationService.unreadCount() > 0"
+              title="Notifications"
+              aria-label="View notifications"
+            >
+              <i class="bi bi-bell-fill"></i>
+              <span *ngIf="inAppNotificationService.unreadCount() > 0" class="notification-badge-pill">
+                {{ inAppNotificationService.unreadCount() }}
+              </span>
+            </button>
+
+            <!-- Notifications Dropdown Menu -->
+            <div class="notification-dropdown glass-panel" *ngIf="inAppNotificationService.isOpen()">
+              <div class="notification-dropdown-header">
+                <div class="header-title">
+                  <i class="bi bi-bell"></i>
+                  <span>Notifications</span>
+                  <span *ngIf="inAppNotificationService.unreadCount() > 0" class="badge badge-accent">
+                    {{ inAppNotificationService.unreadCount() }} new
+                  </span>
+                </div>
+                <button 
+                  *ngIf="inAppNotificationService.unreadCount() > 0" 
+                  type="button"
+                  (click)="inAppNotificationService.markAllAsRead()"
+                  class="btn-text-link"
+                >
+                  Mark all read
+                </button>
+              </div>
+
+              <div class="notification-dropdown-body">
+                <div *ngIf="inAppNotificationService.notifications().length === 0" class="notification-empty">
+                  <i class="bi bi-bell-slash"></i>
+                  <p>No notifications yet</p>
+                </div>
+
+                <div 
+                  *ngFor="let n of inAppNotificationService.notifications()" 
+                  class="notification-item"
+                  [class.unread]="!n.isRead"
+                  (click)="inAppNotificationService.markAsRead(n.id)"
+                >
+                  <div class="item-icon" [ngClass]="n.type === 'ApplicationApproved' ? 'icon-success' : 'icon-info'">
+                    <i class="bi" [ngClass]="n.type === 'ApplicationApproved' ? 'bi-check-circle-fill' : 'bi-calendar-check-fill'"></i>
+                  </div>
+                  <div class="item-content">
+                    <div class="item-title">{{ n.title }}</div>
+                    <div class="item-message">{{ n.message }}</div>
+                    <div class="item-time"><i class="bi bi-clock"></i> {{ n.createdAt | date:'short' }}</div>
+                  </div>
+                  <div *ngIf="!n.isRead" class="item-dot" title="Unread"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button (click)="logout()" class="btn btn-outline btn-sm logout-btn" title="Sign Out">
+            <i class="bi bi-box-arrow-right"></i> Logout
+          </button>
+        </ng-container>
+
+        <!-- Theme Toggle (Light / Dark Mode) -->
+        <button 
+          (click)="themeService.toggleTheme()" 
+          class="theme-toggle-btn" 
+          [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+          aria-label="Toggle theme mode"
+        >
+          <i class="bi" [ngClass]="themeService.isDark() ? 'bi-sun-fill' : 'bi-moon-stars-fill'"></i>
+        </button>
+      </div>
+
+      <!-- Mobile Menu Toggle Button -->
+      <div class="mobile-actions">
+        <button 
+          (click)="themeService.toggleTheme()" 
+          class="theme-toggle-btn mobile-theme-btn" 
+          aria-label="Toggle theme mode"
+        >
+          <i class="bi" [ngClass]="themeService.isDark() ? 'bi-sun-fill' : 'bi-moon-stars-fill'"></i>
+        </button>
+        <button class="mobile-toggle" (click)="toggleMobileMenu()" aria-label="Toggle navigation">
+          <i class="bi" [ngClass]="mobileMenuOpen ? 'bi-x-lg' : 'bi-list'"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div class="mobile-drawer" [class.open]="mobileMenuOpen">
+      <a routerLink="/" (click)="closeMobileMenu()" class="mobile-nav-item">
+        <i class="bi bi-house-door"></i> Home
+      </a>
+      <a routerLink="/architecture" (click)="closeMobileMenu()" class="mobile-nav-item">
+        <i class="bi bi-cpu-fill"></i> Architecture & Engineering Hub
+      </a>
+      <ng-container *ngIf="!currentUser">
+        <a routerLink="/login" (click)="closeMobileMenu()" class="mobile-nav-item">
+          <i class="bi bi-box-arrow-in-right"></i> Login
+        </a>
+        <a routerLink="/register" (click)="closeMobileMenu()" class="btn btn-primary" style="margin-top: 0.5rem;">
+          <i class="bi bi-person-plus-fill"></i> Get Started
+        </a>
+      </ng-container>
+      <ng-container *ngIf="currentUser">
+        <a [routerLink]="getDashboardLink()" (click)="closeMobileMenu()" class="mobile-nav-item">
+          <i class="bi bi-speedometer2"></i> {{ currentUser.role }} Dashboard
+        </a>
+        <button (click)="logout()" class="btn btn-danger btn-sm" style="margin-top: 1rem; width: 100%;">
+          <i class="bi bi-box-arrow-right"></i> Logout
+        </button>
+      </ng-container>
+    </div>
+  </nav>
+</header>
+
+<!-- Global Toast Notification System -->
+<div class="toast-container" *ngIf="notificationService.notifications().length > 0">
+  <div 
+    *ngFor="let toast of notificationService.notifications()" 
+    class="toast-item"
+    [ngClass]="'toast-' + toast.type"
+  >
+    <div class="toast-icon">
+      <i class="bi" [ngClass]="{
+        'bi-check-circle-fill': toast.type === 'success',
+        'bi-exclamation-triangle-fill': toast.type === 'warning',
+        'bi-x-circle-fill': toast.type === 'error',
+        'bi-info-circle-fill': toast.type === 'info'
+      }"></i>
+    </div>
+    <div class="toast-content">
+      <div class="toast-title">{{ toast.title }}</div>
+      <div class="toast-message">{{ toast.message }}</div>
+    </div>
+    <button class="toast-close" (click)="notificationService.dismiss(toast.id)" aria-label="Close notification">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Main Application Content -->
+<main [class.page-wrapper]="!isAdminRoute()">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- Modern Footer -->
+<footer class="site-footer" *ngIf="!isAdminRoute()">
+  <div class="container footer-content">
+    <div class="footer-brand">
+      <div class="brand">
+        <div class="brand-icon"><i class="bi bi-compass-fill"></i></div>
+        <div class="brand-text"><span>Drive</span><span class="brand-accent">Addis</span></div>
+      </div>
+      <p class="footer-tagline">
+        Addis Ababa's premier driving education & certified instructor booking platform. Learn faster, drive safer, pass with confidence.
+      </p>
+      <div class="footer-socials">
+        <a href="#" class="social-icon" title="Telegram"><i class="bi bi-telegram"></i></a>
+        <a href="#" class="social-icon" title="Facebook"><i class="bi bi-facebook"></i></a>
+        <a href="#" class="social-icon" title="Instagram"><i class="bi bi-instagram"></i></a>
+        <a href="#" class="social-icon" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+      </div>
+    </div>
+
+    <div class="footer-section">
+      <h4>Addis Ababa Hubs</h4>
+      <ul>
+        <li><i class="bi bi-geo-alt"></i> Bole & Kazanchis</li>
+        <li><i class="bi bi-geo-alt"></i> Piassa & Arat Kilo</li>
+        <li><i class="bi bi-geo-alt"></i> CMC, Ayat & Megenagna</li>
+        <li><i class="bi bi-geo-alt"></i> Sarbet & Mexico</li>
+        <li><i class="bi bi-geo-alt"></i> Lebu & Jomo</li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h4>Platform & Architecture</h4>
+      <ul>
+        <li><a routerLink="/"><i class="bi bi-chevron-right"></i> Find Instructors</a></li>
+        <li><a routerLink="/architecture"><i class="bi bi-chevron-right"></i> Engineering & Security Hub</a></li>
+        <li><a routerLink="/register"><i class="bi bi-chevron-right"></i> Become an Instructor</a></li>
+        <li><a routerLink="/login"><i class="bi bi-chevron-right"></i> Student & Admin Portal</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h4>Contact & Support</h4>
+      <p class="contact-item"><i class="bi bi-telephone"></i> +251 91 100 0000</p>
+      <p class="contact-item"><i class="bi bi-envelope"></i> support&#64;driveaddis.et</p>
+      <p class="contact-item"><i class="bi bi-clock"></i> Mon - Sun: 7:00 AM - 8:00 PM</p>
+      <div class="badge badge-verified" style="margin-top: 0.75rem;">
+        <i class="bi bi-shield-check"></i> Verified RTA Partners
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="container footer-bottom-inner">
+      <p>&copy; 2026 DriveAddis Platform. All rights reserved.</p>
+      <p class="developer-credit">Powered by Angular 18 Signals & .NET 9 Clean Architecture</p>
+    </div>
+  </div>
+</footer>

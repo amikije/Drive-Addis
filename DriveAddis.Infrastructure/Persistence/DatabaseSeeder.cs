@@ -89,9 +89,12 @@ public static class DatabaseSeeder
 
         var admin = new User
         {
+            UserName = "+251900000000",
+            NormalizedUserName = "+251900000000",
             PhoneNumber = "+251900000000",
             PasswordHash = passwordHasher.Hash("AdminPass123!"),
-            Role = UserRole.Admin
+            Role = UserRole.Admin,
+            SecurityStamp = Guid.NewGuid().ToString()
         };
 
         context.Users.Add(admin);

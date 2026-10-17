@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using DriveAddis.Application.Interfaces;
 using DriveAddis.Domain.Entities;
@@ -17,21 +18,23 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         _configuration = configuration;
     }
 
-    public string GenerateToken(User user)
+    public AuthTokens GenerateToken(User user)
     {
         var key = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
 
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+        var jwtId = Guid.NewGuid().ToString();
+
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.MobilePhone, user.PhoneNumber),
-            new(ClaimTypes.Role, user.Role.ToString())
+            new(ClaimTypes.MobilePhone, user.PhoneNumber ?? ""),
+            new(ClaimTypes.Role, user.Role.ToString()),
+            new(JwtRegisteredClaimNames.Jti, jwtId)
         };
 
-        // Attach whichever profile ID is relevant, so endpoints can identify "which student/instructor is this?"
         if (user.StudentId.HasValue)
             claims.Add(new Claim("studentId", user.StudentId.Value.ToString()));
 
@@ -42,10 +45,25 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(
-                double.Parse(_configuration["Jwt:ExpiryMinutes"]!)),
+            expires: DateTime.UtcNow.AddMinutes(15), // Short-lived Access Token (15 mins)
             signingCredentials: credentials);
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+        var refreshToken = GenerateRefreshTokenString();
+
+        return new AuthTokens
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            JwtId = jwtId
+        };
+    }
+
+    private static string GenerateRefreshTokenString()
+    {
+        var randomNumber = new byte[32];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
     }
 }
