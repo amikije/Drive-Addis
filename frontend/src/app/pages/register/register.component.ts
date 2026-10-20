@@ -40,7 +40,6 @@ export class RegisterComponent implements OnInit {
   loading = false;
 
   ngOnInit(): void {
-    // Initialize Reactive Form (Module 8)
     this.registerForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.minLength(3)]],
       phoneNumber: ['', [Validators.required, Validators.pattern(/^(\+251|0)9[0-9]{8}$/)]],
@@ -48,28 +47,43 @@ export class RegisterComponent implements OnInit {
       confirmPassword: ['', [Validators.required]],
       hourlyPrice: [350, [Validators.min(100), Validators.max(2500)]],
       selectedLocation: ['Bole / Medhanialem'],
-      licensePhotoUrl: ['', [Validators.required]]
+      licensePhotoUrl: ['', [Validators.required]],
+      vehicleType: ['Manual', [Validators.required]],
+      vehicleModel: ['', [Validators.required]],
+      plateNumber: ['', [Validators.required]]
     });
   }
 
   selectRole(role: 'Student' | 'Instructor'): void {
     this.selectedRole = role;
     this.errorMessage = '';
-    
-    // Manage validation based on role
+
     const licenseControl = this.registerForm.get('licensePhotoUrl');
+    const vehicleTypeControl = this.registerForm.get('vehicleType');
+    const vehicleModelControl = this.registerForm.get('vehicleModel');
+    const plateNumberControl = this.registerForm.get('plateNumber');
+
     if (role === 'Instructor') {
       licenseControl?.setValidators([Validators.required]);
+      vehicleTypeControl?.setValidators([Validators.required]);
+      vehicleModelControl?.setValidators([Validators.required]);
+      plateNumberControl?.setValidators([Validators.required]);
     } else {
       licenseControl?.clearValidators();
+      vehicleTypeControl?.clearValidators();
+      vehicleModelControl?.clearValidators();
+      plateNumberControl?.clearValidators();
     }
     licenseControl?.updateValueAndValidity();
+    vehicleTypeControl?.updateValueAndValidity();
+    vehicleModelControl?.updateValueAndValidity();
+    plateNumberControl?.updateValueAndValidity();
   }
 
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
         this.errorMessage = 'File is too large. Maximum size is 5MB.';
         this.registerForm.get('licensePhotoUrl')?.setValue('');
         return;
@@ -141,6 +155,9 @@ export class RegisterComponent implements OnInit {
       payload.latitude = loc ? loc.lat : 9.0000;
       payload.longitude = loc ? loc.lng : 38.7800;
       payload.licensePhotoUrl = formValues.licensePhotoUrl;
+      payload.vehicleType = formValues.vehicleType;
+      payload.vehicleModel = formValues.vehicleModel?.trim();
+      payload.plateNumber = formValues.plateNumber?.trim();
     }
 
     this.authService.register(payload).subscribe({

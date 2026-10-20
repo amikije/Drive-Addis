@@ -69,6 +69,15 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, Result<AuthRespo
                 LicensePhotoUrl = request.LicensePhotoUrl
 
             };
+            if (request.VehicleType.HasValue)
+            {
+                user.Instructor.Vehicles.Add(new Vehicle
+                {
+                    Type = request.VehicleType.Value,
+                    Model = request.VehicleModel ?? string.Empty,
+                    PlateNumber = request.PlateNumber ?? string.Empty
+                });
+            }
         }
         else
         {

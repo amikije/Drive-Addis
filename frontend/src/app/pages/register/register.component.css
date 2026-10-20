@@ -115,3 +115,52 @@
   font-weight: 700;
   color: var(--primary);
 }
+
+/* Vehicle type toggle */
+.vehicle-type-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.vehicle-type-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.85rem 0.5rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.vehicle-type-btn i {
+  font-size: 1.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.vehicle-type-btn strong {
+  font-size: 0.95rem;
+}
+
+.vehicle-type-btn small {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.vehicle-type-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.vehicle-type-btn.active {
+  border-color: var(--accent);
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--accent);
+  font-weight: 600;
+}

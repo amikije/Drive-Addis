@@ -13,5 +13,8 @@ public record RegisterCommand(
     decimal? HourlyPrice,
     double? Latitude,
     double? Longitude,
-     string? LicensePhotoUrl
+    VehicleType? VehicleType,
+    string? VehicleModel,
+    string? PlateNumber,
+    string? LicensePhotoUrl
 ) : IRequest<Result<AuthResponseDto>>;

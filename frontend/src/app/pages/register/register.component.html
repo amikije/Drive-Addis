@@ -110,6 +110,65 @@
             </option>
           </select>
         </div>
+
+        <!-- Vehicle Type Toggle -->
+        <div class="form-group">
+          <label class="form-label"><i class="bi bi-gear-fill"></i> Car Transmission Type *</label>
+          <div class="vehicle-type-selector">
+            <button
+              type="button"
+              class="vehicle-type-btn"
+              [class.active]="registerForm.get('vehicleType')?.value === 'Manual'"
+              (click)="registerForm.get('vehicleType')?.setValue('Manual')"
+              id="btn-manual"
+            >
+              <i class="bi bi-joystick"></i>
+              <strong>Manual</strong>
+              <small>Stick shift / clutch</small>
+            </button>
+            <button
+              type="button"
+              class="vehicle-type-btn"
+              [class.active]="registerForm.get('vehicleType')?.value === 'Automatic'"
+              (click)="registerForm.get('vehicleType')?.setValue('Automatic')"
+              id="btn-automatic"
+            >
+              <i class="bi bi-cpu"></i>
+              <strong>Automatic</strong>
+              <small>Self-shifting</small>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="bi bi-car-front"></i> Car Model *</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="e.g. Toyota Corolla"
+            formControlName="vehicleModel"
+            id="vehicle-model-input"
+            [class.is-invalid]="registerForm.get('vehicleModel')?.invalid && registerForm.get('vehicleModel')?.touched"
+          />
+          <small *ngIf="registerForm.get('vehicleModel')?.invalid && registerForm.get('vehicleModel')?.touched" class="form-hint-error">
+            Car model is required.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="bi bi-card-text"></i> Plate Number *</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="e.g. AA-12345"
+            formControlName="plateNumber"
+            id="plate-number-input"
+            [class.is-invalid]="registerForm.get('plateNumber')?.invalid && registerForm.get('plateNumber')?.touched"
+          />
+          <small *ngIf="registerForm.get('plateNumber')?.invalid && registerForm.get('plateNumber')?.touched" class="form-hint-error">
+            Plate number is required.
+          </small>
+        </div>
       </ng-container>
 
       <div class="form-group">
